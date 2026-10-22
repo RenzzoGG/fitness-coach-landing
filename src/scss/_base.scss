@@ -1,0 +1,105 @@
+// =============================================================================
+// Estilos base propios: lo que Bootstrap no cubre con variables
+// =============================================================================
+@use "sass:map";
+
+// Las anclas (#programs, #book…) no quedan debajo del navbar sticky (F3).
+// El scroll suave ya lo pone Bootstrap ($enable-smooth-scroll), solo si el
+// usuario no pidió reducir el movimiento.
+html {
+  scroll-padding-top: 5rem;
+}
+
+// Títulos: tracking negativo, el gesto tipográfico de la marca.
+// Bootstrap no tiene variable de letter-spacing para títulos.
+h1, h2, h3, h4,
+.h1, .h2, .h3, .h4 {
+  letter-spacing: -.03em;
+  text-wrap: balance;
+}
+
+.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
+  letter-spacing: -.04em;
+}
+
+::selection {
+  color: $ink;
+  background-color: $volt;
+}
+
+// Foco visible de marca para enlaces y elementos sin estilo de foco propio.
+// Botones, inputs y acordeón ya tienen su anillo (box-shadow con $focus-ring-*)
+// y anulan este outline con un selector más específico.
+:focus-visible {
+  outline: .1875rem solid $volt;
+  outline-offset: .1875rem;
+}
+
+// Enlaces dentro del texto corrido: subrayados, para no depender solo del color
+// ($link-decoration: none aplica a la navegación y los botones).
+.text-link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .2em;
+
+  &:hover {
+    text-decoration-thickness: 2px;
+  }
+}
+
+// Skip link: .visually-hidden-focusable de Bootstrap lo oculta hasta que
+// recibe foco; esta clase solo le da posición y aspecto de botón Volt.
+.skip-link {
+  position: fixed;
+  top: map.get($spacers, 3);
+  left: map.get($spacers, 3);
+  z-index: $zindex-fixed + 10; // por encima del navbar
+  padding: map.get($spacers, 2) map.get($spacers, 4);
+  font-weight: 500;
+  color: $ink;
+  background-color: $volt;
+  border-radius: $border-radius-pill;
+}
+
+// Etiqueta pequeña sobre los títulos de sección: "01 — Meet your coach".
+.eyebrow {
+  display: inline-flex;
+  gap: .75em;
+  align-items: center;
+  margin-bottom: map.get($spacers, 3);
+  font-size: $small-font-size;
+  font-weight: 500;
+  color: $steel;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+}
+
+.eyebrow-number {
+  font-family: $headings-font-family;
+  font-weight: 700;
+  color: $volt;
+}
+
+// Rejilla técnica de fondo, solo con CSS. Se desvanece hacia los bordes
+// con una máscara radial para no competir con el contenido.
+.bg-grid {
+  background-image:
+    linear-gradient(rgba($chalk, .06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba($chalk, .06) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+}
+
+// Animaciones de scroll (las activa reveal.js en F9).
+// El estado oculto solo se aplica si hay JS (clase .js en <html>) y el usuario
+// no pidió reducir el movimiento: en cualquier otro caso todo se ve desde el inicio.
+@media (prefers-reduced-motion: no-preference) {
+  .js .reveal {
+    transition: opacity .6s ease, transform .6s ease;
+
+    &:not(.is-visible) {
+      opacity: 0;
+      transform: translateY(1.5rem);
+    }
+  }
+}
