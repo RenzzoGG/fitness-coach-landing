@@ -4,6 +4,8 @@
 import 'bootstrap/js/src/collapse.js';
 import { initNavbar } from './navbar.js';
 import { initPricingToggle } from './pricing-toggle.js';
+import { initBookingForm } from './form-validation.js';
 
 initNavbar();
 initPricingToggle();
+initBookingForm();
