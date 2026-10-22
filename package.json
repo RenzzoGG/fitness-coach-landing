@@ -14,7 +14,8 @@
     "build:js": "esbuild src/js/main.js --bundle --minify --format=esm --target=es2020 --outfile=dist/js/main.js",
     "size": "node scripts/size.mjs",
     "check": "node scripts/check-classes.mjs",
-    "og": "node scripts/og.mjs"
+    "og": "node scripts/og.mjs",
+    "verify": "node scripts/verify-html.mjs"
   },
   "browserslist": [
     "> 0.5%",
