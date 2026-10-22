@@ -1,0 +1,15 @@
+// =============================================================================
+// Formulario de consulta
+// Inputs, selects, checkbox y errores salen de las variables $input-*,
+// $form-check-* y del estado invalid de Bootstrap; aquí solo el mensaje de éxito.
+// =============================================================================
+@use "sass:map";
+
+// La región role="status" siempre existe (para que el lector de pantalla la
+// tenga registrada); solo se ve cuando el JS escribe en ella.
+.book-status:not(:empty) {
+  padding: map.get($spacers, 3);
+  margin-top: map.get($spacers, 4);
+  border: 1px solid $volt;
+  border-radius: $border-radius;
+}

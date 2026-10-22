@@ -420,6 +420,92 @@
         </div>
       </div>
     </section>
+
+    <section id="book" class="section py-6 py-lg-7" aria-labelledby="book-title">
+      <div class="container">
+        <div class="row g-4 g-lg-5">
+          <div class="col-lg-5">
+            <p class="eyebrow"><span class="eyebrow-number">06</span> Book your free call</p>
+            <h2 id="book-title" class="mb-3">20 minutes, no pressure.</h2>
+            <p class="lead text-body-secondary">We'll talk about your goals, schedule and training history, and see if we're a good fit.</p>
+            <ul class="pricing-features list-unstyled mb-0">
+              <li><svg class="pricing-check" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Video call at a time that suits you</li>
+              <li><svg class="pricing-check" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>An honest plan recommendation</li>
+              <li><svg class="pricing-check" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m5 12 4 4L19 6" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>No commitment, no card required</li>
+            </ul>
+          </div>
+
+          <div class="col-lg-7">
+            <!-- novalidate: sin burbujas nativas (idioma del navegador, sin estilo); la
+                 Constraint Validation API sigue funcionando y la usa form-validation.js -->
+            <form id="book-form" class="card" novalidate aria-labelledby="book-title">
+              <div class="card-body">
+                <p class="small text-body-secondary">All fields are required unless marked optional.</p>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label" for="name">Full name</label>
+                    <input class="form-control" id="name" name="name" type="text" autocomplete="name" maxlength="80" required aria-describedby="name-error">
+                    <div class="invalid-feedback" id="name-error">Please enter your name.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="email">Email</label>
+                    <input class="form-control" id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-error"
+                           data-type-mismatch="Enter a valid email, like name@example.com.">
+                    <div class="invalid-feedback" id="email-error">Please enter your email.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="goal">Main goal</label>
+                    <select class="form-select" id="goal" name="goal" required aria-describedby="goal-error">
+                      <option value="">Choose your main goal</option>
+                      <option>Build strength</option>
+                      <option>Lose fat</option>
+                      <option>Improve performance</option>
+                      <option>Get back into training</option>
+                    </select>
+                    <div class="invalid-feedback" id="goal-error">Please choose your main goal.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="plan">Preferred plan <span class="text-body-secondary">(optional)</span></label>
+                    <select class="form-select" id="plan" name="plan">
+                      <option value="">Not sure yet</option>
+                      <option value="foundation">Foundation</option>
+                      <option value="performance">Performance</option>
+                      <option value="elite">Elite 1:1</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label" for="time">Best time to call <span class="text-body-secondary">(optional)</span></label>
+                    <select class="form-select" id="time" name="time">
+                      <option>Any time</option>
+                      <option>Morning</option>
+                      <option>Afternoon</option>
+                      <option>Evening</option>
+                    </select>
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label" for="message">Anything else? <span class="text-body-secondary">(optional)</span></label>
+                    <textarea class="form-control" id="message" name="message" rows="4" maxlength="500" aria-describedby="message-hint"></textarea>
+                    <div class="form-text" id="message-hint">Injuries, equipment, schedule — up to 500 characters.</div>
+                  </div>
+                  <div class="col-12">
+                    <div class="form-check">
+                      <input class="form-check-input" id="consent" name="consent" type="checkbox" required aria-describedby="consent-error">
+                      <label class="form-check-label" for="consent">I agree to be contacted about my free consultation.</label>
+                      <div class="invalid-feedback" id="consent-error">Please confirm we can contact you.</div>
+                    </div>
+                  </div>
+                  <div class="col-12 d-flex flex-column flex-sm-row align-items-sm-center gap-3 mt-4">
+                    <button class="btn btn-primary btn-lg" type="submit">Book my free call<span class="btn-arrow" aria-hidden="true">→</span></button>
+                    <p class="small text-body-secondary mb-0">Demo form — no data is sent anywhere.</p>
+                  </div>
+                </div>
+                <div id="book-status" class="book-status" role="status"></div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 </body>
 </html>
