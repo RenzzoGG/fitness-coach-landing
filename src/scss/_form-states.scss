@@ -1,0 +1,11 @@
+// =============================================================================
+// Estados de validación de formularios
+// -----------------------------------------------------------------------------
+// Bootstrap genera .is-valid/.valid-feedback/.valid-tooltip y .is-invalid/… a
+// partir de $form-validation-states (forms/validation recorre el mapa).
+// Solo marcamos errores, así que quitamos "valid". Va después de
+// bootstrap/scss/variables (el mapa ya existe) y antes de los módulos.
+// =============================================================================
+@use "sass:map";
+
+$form-validation-states: map.remove($form-validation-states, "valid");

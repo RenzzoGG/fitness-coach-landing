@@ -13,6 +13,7 @@
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/variables-dark";
 @import "theme-colors";                // recorta $theme-colors antes de que maps lo use
+@import "form-states";                 // solo el estado invalid (sin .is-valid)
 @import "bootstrap/scss/maps";
 @import "bootstrap/scss/mixins";
 @import "bootstrap/scss/utilities";
