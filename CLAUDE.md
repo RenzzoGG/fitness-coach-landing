@@ -18,6 +18,7 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 - `npm run build`: build de producción en `dist/`.
 - `npm run check`: verifica que cada clase del HTML exista en el CSS. `npm run size`: peso del CSS y del JS.
 - Las imágenes responsive se generan dentro del build (`scripts/images.mjs`, con caché en `.cache/img`).
+- `npm run og`: regenera `src/static/og-image.png` (versionada). Solo hace falta si cambia la marca o el titular.
 
 ## Reglas de Bootstrap y Sass
 - Bootstrap **solo desde su fuente Sass** (`bootstrap/scss/*`). Nunca `bootstrap.min.css` ni CDNs.

@@ -352,7 +352,10 @@ fitness-coach-landing/
 
 ### SEO y Open Graph
 - `<title>Pulse Theory — Online Strength & Performance Coaching (Demo)</title>`, `meta description`, `canonical`, `theme-color: #0E0F12`, `og:type/title/description/url/image/image:width/image:height/image:alt`, `twitter:card=summary_large_image`, favicon SVG, `apple-touch-icon` y `site.webmanifest`.
-- `og-image.png` de **1200×630**, generada con sharp a partir de una plantilla SVG con la marca. **Riesgo:** librsvg (el motor de sharp para SVG) no lee woff2. Plan B: convertir el wordmark a trazados (paths) en el SVG.
+- `og-image.png` de **1200×630** (PNG con paleta, ~60 KB), generada con `npm run og` (`scripts/og.mjs`) y **versionada en `src/static/`**. Composición: fondo Ink con la rejilla, foto del hero a la derecha fundida con un degradado, logo, titular en Space Grotesk 700 y líneas en DM Sans 500 (incluye "Demo project, fictional brand").
+  - **Cómo se consigue Space Grotesk** (decisión de F10): sharp dibuja SVG con librsvg y texto con Pango, y **ninguno carga WOFF/WOFF2** (comprobado: `fontfile` apuntando al `.woff` cae en silencio a DejaVu). `scripts/woff-to-sfnt.mjs` convierte el WOFF 1 de @fontsource a TTF con `zlib` de Node (WOFF 1 son las mismas tablas comprimidas con zlib), sin dependencias nuevas, y ese TTF se pasa a Pango como `fontfile`. Se descartó `opentype.js` (dependencia nueva) y un navegador headless (demasiado pesado).
+  - **Ojo con los nombres de familia:** DM Sans 500 se llama internamente "DM Sans Medium"; en Pango hay que escribir `'DM Sans Medium, 22'` (la coma cierra la familia) o vuelve a caer a DejaVu.
+  - **Por qué versionada y no en el build:** Pango y fontconfig dependen del sistema, y en Railway podrían comportarse distinto. Un PNG en el repo es determinista (dos generaciones dan el mismo archivo byte a byte). Se regenera solo si cambia la marca.
 - **No** agregamos JSON-LD de tipo `LocalBusiness`/`Person`, porque describiría un negocio que no existe ante los buscadores.
 
 ### Deploy (decisión pendiente, fase F12)

@@ -10,7 +10,7 @@ También respetamos el resto de la licencia: no mostrar a las personas de forma 
 
 | Archivo (`src/img/`) | Uso | Foto original | Autor |
 |---|---|---|---|
-| `hero-dumbbell-grip.jpg` | Hero | [Hand Gripping Dumbbell in Dimly Lit Gym](https://www.pexels.com/photo/hand-gripping-dumbbell-in-dimly-lit-gym-37281143/) | [Dishant Babariya](https://www.pexels.com/@dsbabariya/) |
+| `hero-dumbbell-grip.jpg` | Hero y la imagen Open Graph (`src/static/og-image.png`) | [Hand Gripping Dumbbell in Dimly Lit Gym](https://www.pexels.com/photo/hand-gripping-dumbbell-in-dimly-lit-gym-37281143/) | [Dishant Babariya](https://www.pexels.com/@dsbabariya/) |
 | `about-coaching-hands.jpg` | About | [Woman training on machine with personal coach](https://www.pexels.com/photo/woman-training-on-machine-with-personal-coach-6551429/) | [Andres Ayrton](https://www.pexels.com/@andres-ayrton/) |
 
 Descarga: CDN de Pexels a 1200 px de ancho (`?auto=compress&cs=tinysrgb&w=1200`), 1200×1800 JPEG. En F10, `scripts/images.mjs` generará las versiones AVIF/WebP a partir de estos archivos.
