@@ -23,6 +23,11 @@ export function copyStatic() {
   cpSync(`${root}src/static`, dist, { recursive: true });
 }
 
+// Provisional hasta F10 (images.mjs generará AVIF/WebP): copia los JPG tal cual.
+export function copyImages() {
+  cpSync(`${root}src/img`, `${dist}/img`, { recursive: true });
+}
+
 export function copyFonts() {
   mkdirSync(`${dist}/fonts`, { recursive: true });
   for (const [pkg, file] of fonts) {
@@ -39,11 +44,12 @@ export function build() {
   mkdirSync(dist, { recursive: true });
   copyHtml();
   copyStatic();
+  copyImages();
   copyFonts();
 }
 
 // Ejecutado directamente (npm run build:static), no importado desde dev.mjs.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   build();
-  console.log('dist/ ready (html, static, fonts)');
+  console.log('dist/ ready (html, static, images, fonts)');
 }

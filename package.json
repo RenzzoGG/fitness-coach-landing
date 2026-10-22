@@ -12,7 +12,8 @@
     "build:static": "node scripts/build.mjs",
     "build:css": "sass --load-path=node_modules --style=compressed --no-source-map --quiet-deps --silence-deprecation=import src/scss/main.scss dist/css/main.css && postcss dist/css/main.css --replace --no-map --use autoprefixer",
     "build:js": "esbuild src/js/main.js --bundle --minify --format=esm --target=es2020 --outfile=dist/js/main.js",
-    "size": "node scripts/size.mjs"
+    "size": "node scripts/size.mjs",
+    "check": "node scripts/check-classes.mjs"
   },
   "browserslist": [
     "> 0.5%",
