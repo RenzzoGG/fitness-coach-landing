@@ -1,0 +1,26 @@
+// =============================================================================
+// Results: testimonios de ejemplo
+// Tarjetas = .card de Bootstrap; el badge "Sample testimonial" es un .badge
+// normal. Aquí solo la cita y el avatar de iniciales (sin fotos de personas).
+// =============================================================================
+
+.testimonial-quote {
+  font-family: $headings-font-family;
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -.01em;
+}
+
+.testimonial-avatar {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  font-family: $headings-font-family;
+  font-weight: 700;
+  color: $ink;
+  background-color: $volt;
+  border-radius: 50%;
+}
