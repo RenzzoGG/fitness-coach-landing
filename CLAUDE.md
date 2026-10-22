@@ -47,6 +47,7 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 - **Rendimiento:** fuentes locales woff2 (solo latin), imágenes AVIF/WebP con `width`/`height` y lazy-load (menos el hero), sin peticiones a terceros.
 - **Meta final de peso:** CSS ≤ 130 KB min / ≤ 20 KB gzip, JS ≤ 15 KB min. Comprobar con `npm run size` al cerrar cada fase. **No se sube nunca:** si no se cumple, detenerse y proponer qué recortar.
 - Nunca edites `dist/` a mano: es generado e ignorado por git.
+- **Cache-busting:** en el HTML fuente se escriben rutas sin hash (`css/main.css`, `img/…`); el build añade el hash del contenido al nombre. Nunca escribas a mano un nombre con hash ni un `?v=`. `index.html` no debe cachearse largo en el servidor ni en Cloudflare.
 
 ## Honestidad (marca ficticia)
 - El footer siempre incluye: "Pulse Theory is a fictional brand. This is a demo project by Renzzo Gracia Gomez — renzzogg.com".

@@ -2,10 +2,11 @@
 // Útil porque recortamos utilidades: una clase eliminada falla sin avisar.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { distFile } from './dist-files.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const html = readFileSync(`${root}dist/index.html`, 'utf8');
-const css = readFileSync(`${root}dist/css/main.css`, 'utf8');
+const css = readFileSync(distFile('css', 'css'), 'utf8');
 
 // Clases que solo usa el JS (no necesitan reglas propias).
 const jsHooks = new Set(['js']);

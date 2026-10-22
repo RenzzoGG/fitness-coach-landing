@@ -320,6 +320,7 @@ fitness-coach-landing/
   2. `sass --load-path=node_modules --style=compressed --no-source-map --quiet-deps --silence-deprecation=import src/scss/main.scss dist/css/main.css`
   3. `postcss dist/css/main.css --replace --no-map --use autoprefixer`
   4. `esbuild src/js/main.js --bundle --minify --format=esm --target=es2020 --outfile=dist/js/main.js`
+  5. `node scripts/hash-assets.mjs`: hash del contenido en los nombres (ver "Cache-busting").
 - **Imágenes dentro del build** (`scripts/images.mjs`, F10): cada JPG de `src/img` → 480/800/1200 px × AVIF (q50), WebP (q72) y JPEG mozjpeg (q75) en `dist/img`. Las variantes se guardan en `.cache/img` (ignorada por git) y solo se recodifican si el original es más nuevo: build en frío ~11 s, con caché ~0.4 s. No hay binarios generados en el repo; en Railway el build siempre parte en frío.
 - `npm run dev`: `scripts/dev.mjs` usa la API de esbuild (watch + `serve` sobre `dist/`), lanza `sass --watch` y vuelve a copiar `index.html` al detectar cambios. Sin dependencias extra (nada de `concurrently` ni `browser-sync`).
 - `browserslist` en `package.json`: `"> 0.5%, last 2 versions, not dead"`, igual que Bootstrap.
@@ -359,6 +360,17 @@ fitness-coach-landing/
   - **Ojo con los nombres de familia:** DM Sans 500 se llama internamente "DM Sans Medium"; en Pango hay que escribir `'DM Sans Medium, 22'` (la coma cierra la familia) o vuelve a caer a DejaVu.
   - **Por qué versionada y no en el build:** Pango y fontconfig dependen del sistema, y en Railway podrían comportarse distinto. Un PNG en el repo es determinista (dos generaciones dan el mismo archivo byte a byte). Se regenera solo si cambia la marca.
 - **No** agregamos JSON-LD de tipo `LocalBusiness`/`Person`, porque describiría un negocio que no existe ante los buscadores.
+
+### Cache-busting (F10)
+- **Problema:** el sitio irá detrás de Cloudflare, que guarda CSS, JS e imágenes durante horas; con nombres fijos, un deploy puede seguir sirviendo versiones viejas. Antes se resolvía subiendo un `?v=N` a mano.
+- **Solución automática:** `scripts/hash-assets.mjs`, último paso de `npm run build`, añade al nombre los 8 primeros caracteres del SHA-256 del contenido (`main.ef7ae4ad.css`) y reescribe las referencias:
+  1. fuentes, imágenes y OG (no referencian a nada);
+  2. el CSS (después de reescribir sus `url(../fonts/…)`) y el JS;
+  3. el HTML (rutas relativas, `srcset` y las URLs absolutas de `og:image`/`twitter:image`).
+- **Por qué hash en el nombre y no `?v=`:** el nombre cambia solo si cambia el contenido (comprobado: tocar un estilo solo cambia el hash del CSS; dos builds iguales dan los mismos 26 nombres); funciona con cualquier caché, aunque ignore el query string; las versiones vieja y nueva conviven durante el deploy; y permite cachear estos archivos un año.
+- **Sin hash (nombre fijo):** `index.html`, `favicon.svg`, los íconos PNG, `site.webmanifest` y `robots.txt`.
+- **En dev no se hashea:** `npm run dev` sirve `css/main.css` y `js/main.js` tal cual. `npm run size` y `npm run check` encuentran el archivo con o sin hash (`scripts/dist-files.mjs`).
+- **Headers previstos para F12:** assets con hash → `Cache-Control: public, max-age=31536000, immutable`; `index.html` → `no-cache` (se revalida siempre, porque es el que apunta a los hashes nuevos). Cloudflare respeta los headers del origen. **El HTML nunca debe cachearse largo** (ni con una regla "Cache Everything" sin purgar en cada deploy).
 
 ### Deploy (decisión pendiente, fase F12)
 - Railway con el subdominio provisional `pulse.renzzogg.com`. La forma de servir `dist/` (sitio estático de Railpack u otra opción) se decide en F12, con confirmación previa.
