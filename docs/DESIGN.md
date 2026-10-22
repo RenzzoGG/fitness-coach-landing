@@ -229,7 +229,7 @@ Orden en la página (anclas entre paréntesis). Los textos son borradores en ing
 - Nota bajo la sección: *"These are sample testimonials for demo purposes. Pulse Theory is a fictional brand."*
 
 ### 6.6 FAQ (`#faq`)
-`05 — FAQ`. Acordeón de Bootstrap (`.accordion-flush` reestilizado) con 6 preguntas:
+`05 — FAQ`. Acordeón de Bootstrap (`.accordion` normal, con bordes y radio; todo el estilo sale de las variables `$accordion-*` de `_variables.scss`, sin CSS propio) con 6 preguntas:
 1. Do I need a gym membership?
 2. I'm a complete beginner — is this for me?
 3. How do the weekly check-ins work?
@@ -237,7 +237,7 @@ Orden en la página (anclas entre paréntesis). Los textos son borradores en ing
 5. Can I switch plans or cancel?
 6. What happens on the free consultation?
 
-Botones con `aria-expanded` y `aria-controls`, que gestiona Collapse. El primer ítem abierto por defecto.
+Botones con `aria-expanded` y `aria-controls`, que gestiona Collapse. El primer ítem abierto por defecto. `data-bs-parent="#faq-accordion"` hace que, al abrir una respuesta, Collapse cierre la anterior. Los encabezados son `h3` (bajo el `h2` de la sección).
 
 ### 6.7 Book a free consultation (`#book`)
 - `06 — Book your free call`. Texto: *"20 minutes, no pressure. We'll see if we're a good fit."*
