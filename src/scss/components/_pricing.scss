@@ -66,6 +66,69 @@
   color: $steel;
 }
 
+// -----------------------------------------------------------------------------
+// Cambio mensual/anual
+// Los dos valores están en el HTML, apilados en la misma celda del grid (el más
+// ancho fija el tamaño: sin saltos de layout). El JS solo pone
+// data-billing="monthly|annual" en la sección; el CSS decide qué se ve.
+// -----------------------------------------------------------------------------
+.price-swap {
+  display: inline-grid;
+
+  > * {
+    grid-area: 1 / 1;
+  }
+}
+
+.price-note {
+  display: grid;
+}
+
+// Estado estático, sin animación: carga inicial, reduced motion y estado final.
+// visibility: hidden saca el valor oculto del árbol de accesibilidad, así que
+// el lector de pantalla solo lee el precio visible.
+[data-period="annual"],
+[data-billing="annual"] [data-period="monthly"] {
+  visibility: hidden;
+  opacity: 0;
+}
+
+[data-billing="annual"] [data-period="annual"] {
+  visibility: visible;
+  opacity: 1;
+}
+
+// Animación: solo si se permite movimiento y solo tras el primer cambio
+// (data-billing no existe al cargar). Cada cambio de estado cambia el
+// animation-name y la animación arranca de cero hacia el estado correcto:
+// sin timers ni animationend, no se puede trabar con clics rápidos.
+@media (prefers-reduced-motion: no-preference) {
+  [data-billing] [data-period] {
+    animation: .3s ease both;
+    animation-delay: calc(var(--card-index, 0) * 60ms); // escalonado por tarjeta
+  }
+
+  [data-billing="monthly"] [data-period="monthly"],
+  [data-billing="annual"] [data-period="annual"] {
+    animation-name: price-in;
+  }
+
+  [data-billing="monthly"] [data-period="annual"],
+  [data-billing="annual"] [data-period="monthly"] {
+    animation-name: price-out;
+  }
+}
+
+@keyframes price-out {
+  from { visibility: visible; opacity: 1; transform: none; }
+  to { visibility: hidden; opacity: 0; transform: translateY(-.5em); }
+}
+
+@keyframes price-in {
+  from { visibility: visible; opacity: 0; transform: translateY(.5em); }
+  to { visibility: visible; opacity: 1; transform: none; }
+}
+
 .pricing-features li {
   display: flex;
   gap: .625rem;

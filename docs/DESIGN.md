@@ -206,7 +206,10 @@ Orden en la página (anclas entre paréntesis). Los textos son borradores en ing
 - El nombre accesible del switch es su `<label>` "Annual" (encendido = precios anuales); el texto "Monthly" a la izquierda es decorativo (`aria-hidden`).
 - El contenedor lleva `hidden` y lo muestra `pricing-toggle.js`: sin JS no aparece un control que no hace nada. **No usa `.d-flex`**: las utilidades llevan `!important` y se compilan después de `[hidden]{display:none !important}` de reboot, así que lo dejarían visible. El `display: flex` va en `_pricing.scss`.
 - Space alterna el switch de forma nativa; el JS añade Enter (`input.click()`, que dispara `change` igual que el ratón).
-- La nota anual se calcula (`annual × 12`), no se repite en el HTML. `priceFor()` es una función pura probada en Node.
+- El JS solo pone `data-billing="monthly|annual"` en la sección y escribe el texto del `aria-live`. No cambia textos.
+- **Animación del cambio** (CSS, `_pricing.scss`): el valor actual sube y se desvanece (`@keyframes price-out`) y el nuevo entra desde abajo (`price-in`), 300 ms, escalonado con `animation-delay: calc(var(--card-index) * 60ms)`; `--card-index` (0, 1, 2) va inline en cada columna. Las animaciones solo se declaran dentro de `prefers-reduced-motion: no-preference` y solo con `data-billing` presente (no se anima al cargar). Con reduced motion queda solo el estado estático, así que el cambio es instantáneo.
+- **No se puede trabar:** cada cambio de estado cambia el `animation-name` y la animación arranca de cero hacia el estado correcto; no hay timers ni `animationend`. Si se interrumpe a mitad, el valor salta al inicio de su keyframe (limitación aceptada de usar keyframes en lugar de transitions).
+- Medido: el JS bajó de 13.3 a 12.8 KB (al quitar el cambio de textos) y el CSS subió 0.9 KB min / 0.2 KB gzip.
 
 | Plan | Mensual | Anual (por mes, facturado al año) | Para quién |
 |---|---|---|---|
@@ -214,7 +217,7 @@ Orden en la página (anclas entre paréntesis). Los textos son borradores en ing
 | **Performance** ★ destacado | $149 | $119 ($1,428/yr) | + check-ins semanales, guía de nutrición y chat |
 | **Elite 1:1** | $299 | $239 ($2,868/yr) | + videollamadas quincenales, análisis técnico por video |
 
-- Precios en atributos `data-price-monthly` y `data-price-annual`. El HTML trae los mensuales, así que el contenido funciona sin JS.
+- **Los dos precios (y las dos notas) están en el HTML**, apilados en la misma celda de un grid (`.price-swap`): `<span data-period="monthly">` y `<span data-period="annual">`. El CSS oculta el anual con `visibility: hidden` (fuera del árbol de accesibilidad), así que sin JS se ven los mensuales.
 - Cada tarjeta tiene su lista de beneficios y un botón "Start with a free call" (lleva a `#book` y preselecciona el plan en el formulario, como mejora progresiva).
 
 ### 6.4 How it works (`#how`)
