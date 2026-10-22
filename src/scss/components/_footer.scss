@@ -1,0 +1,27 @@
+// =============================================================================
+// Footer
+// =============================================================================
+
+.footer-brand {
+  display: inline-flex;
+  gap: .5rem;
+  align-items: center;
+  font-family: $headings-font-family;
+  font-weight: 700;
+  color: $chalk;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+// El aviso de demo es obligatorio: borde Volt a la izquierda para que no pase
+// desapercibido entre el resto del footer.
+.footer-notice {
+  padding-left: .875rem;
+  border-left: 2px solid $volt;
+}
+
+.footer-link {
+  display: inline-block;
+  padding-block: .25rem; // área táctil más cómoda
+  color: $chalk;
+}

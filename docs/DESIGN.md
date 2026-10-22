@@ -252,7 +252,7 @@ Botones con `aria-expanded` y `aria-controls`, que gestiona Collapse. El primer 
 
 ### 6.8 Footer
 - Wordmark, enlaces de las secciones y redes ficticias (`href="#"` con `aria-disabled`, o mejor omitirlas).
-- Aviso obligatorio: **"Pulse Theory is a fictional brand. This is a demo project by Renzzo G. — renzzogg.com"** (con enlace a renzzogg.com).
+- Aviso obligatorio: **"Pulse Theory is a fictional brand. This is a demo project by Renzzo Gracia Gomez — renzzogg.com"** (con enlace a renzzogg.com).
 - Créditos de las fotos de stock (Unsplash o Pexels): autor y enlace a la foto original.
 
 ### 6.9 Botón flotante de WhatsApp

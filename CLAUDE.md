@@ -47,7 +47,7 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 - Nunca edites `dist/` a mano: es generado e ignorado por git.
 
 ## Honestidad (marca ficticia)
-- El footer siempre incluye: "Pulse Theory is a fictional brand. This is a demo project by Renzzo G. — renzzogg.com".
+- El footer siempre incluye: "Pulse Theory is a fictional brand. This is a demo project by Renzzo Gracia Gomez — renzzogg.com".
 - Los testimonios llevan el badge visible **"Sample testimonial"** y una nota aclaratoria. Sin fotos de personas reales como clientes.
 - Sin cifras inventadas presentadas como reales (clientes, kilos perdidos, etc.).
 - El formulario es simulado y lo dice ("Demo form — no data is sent anywhere").
