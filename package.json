@@ -6,6 +6,9 @@
   "type": "module",
   "author": "Renzzo G. (https://renzzogg.com)",
   "license": "UNLICENSED",
+  "engines": {
+    "node": "^22.22.0 || >=24.8.0"
+  },
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "npm run build:static && npm run build:css && npm run build:js && node scripts/hash-assets.mjs",
