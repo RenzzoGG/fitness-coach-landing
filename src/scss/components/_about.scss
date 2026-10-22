@@ -1,0 +1,24 @@
+// =============================================================================
+// About
+// =============================================================================
+
+// Mismo marco que la foto del hero: borde de 1px en vez de sombra.
+.about-media {
+  border: 1px solid $line;
+  border-radius: $border-radius-xl;
+  overflow: hidden;
+
+  img {
+    object-fit: cover;
+  }
+}
+
+// Las credenciales son badges de Bootstrap (.badge .text-bg-secondary) dentro de
+// una lista; solo ajustamos el tamaño, más legible que el 0.75em por defecto.
+.about-credentials .badge {
+  font-size: $small-font-size;
+}
+
+.value-icon {
+  color: $volt;
+}

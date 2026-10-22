@@ -61,6 +61,11 @@ h1, h2, h3, h4,
   border-radius: $border-radius-pill;
 }
 
+// Secciones: una línea fina las separa (el espaciado vertical lo dan .py-6/.py-lg-7).
+.section {
+  border-top: 1px solid $line;
+}
+
 // Etiqueta pequeña sobre los títulos de sección: "01 — Meet your coach".
 .eyebrow {
   display: inline-flex;
