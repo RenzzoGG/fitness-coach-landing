@@ -1,0 +1,48 @@
+// =============================================================================
+// Programs: tarjetas de precios
+// La tarjeta base ya sale de las variables $card-* (fondo Graphite, borde Line,
+// radio 1.25rem); aquí solo va lo específico de precios.
+// =============================================================================
+@use "sass:map";
+
+// Destacada: borde Volt. Bootstrap expone el borde de la tarjeta como variable
+// CSS (--bs-card-border-color), así que basta con cambiarla en vez de
+// redefinir la propiedad border.
+.pricing-card-featured {
+  --#{$prefix}card-border-color: #{$volt};
+}
+
+.pricing-badge {
+  align-self: flex-start;
+  margin-bottom: map.get($spacers, 3);
+}
+
+.price {
+  font-family: $headings-font-family;
+  line-height: 1;
+}
+
+.price-amount {
+  font-size: 3rem;
+  font-weight: 700;
+  letter-spacing: -.04em;
+}
+
+.price-period {
+  margin-left: .25rem;
+  font-size: 1rem;
+  color: $steel;
+}
+
+.pricing-features li {
+  display: flex;
+  gap: .625rem;
+  align-items: flex-start;
+  padding-block: .375rem;
+}
+
+.pricing-check {
+  flex-shrink: 0;
+  margin-top: .125rem;
+  color: $volt;
+}
