@@ -10,10 +10,44 @@
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
-  <main id="main" class="container py-5">
-    <h1>Pulse Theory</h1>
-    <p>Build scaffolding works.</p>
-    <button type="button" class="btn btn-primary">Book a free call</button>
+  <main id="main" class="container py-6">
+    <!-- Sección de prueba temporal (F1): tokens y componentes. Se reemplaza en F3. -->
+    <p class="text-secondary text-uppercase ls-wide small mb-2">Token check</p>
+    <h1 class="display-3 mb-4">Train with intent.</h1>
+    <p class="lead text-secondary mb-5">Primary, outline and secondary buttons, a card, a badge and form controls.</p>
+    <div class="d-flex flex-wrap gap-3 mb-6">
+      <a class="btn btn-primary btn-lg" href="#">Book a free call</a>
+      <a class="btn btn-outline-primary btn-lg" href="#">See programs</a>
+      <button type="button" class="btn btn-secondary">Secondary</button>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card h-100">
+          <div class="card-body">
+            <span class="badge text-bg-primary mb-3">Most popular</span>
+            <h2 class="h3">Performance</h2>
+            <p class="text-secondary">Weekly check-ins, nutrition guidance and chat support.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <form class="card h-100" novalidate>
+          <div class="card-body">
+            <label class="form-label" for="test-email">Email</label>
+            <input class="form-control mb-3" id="test-email" type="email" placeholder="you@example.com">
+            <label class="form-label" for="test-goal">Main goal</label>
+            <select class="form-select mb-3" id="test-goal">
+              <option>Build strength</option>
+              <option>Lose fat</option>
+            </select>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" role="switch" id="test-switch" checked>
+              <label class="form-check-label" for="test-switch">Annual billing</label>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
   </main>
 </body>
 </html>

@@ -1,3 +1,6 @@
-// F0: Bootstrap completo, solo para medir el tamaño de referencia.
-// En F1 se sustituye por imports selectivos (docs/DESIGN.md §5.2).
+// Funciones primero: _variables.scss las puede usar (tint-color, rgba…).
+@import "bootstrap/scss/functions";
+// Mis variables ANTES que las de Bootstrap (ver comentario en _variables.scss).
+@import "variables";
+// Temporal: Bootstrap completo. El siguiente paso lo sustituye por imports selectivos.
 @import "bootstrap/scss/bootstrap";

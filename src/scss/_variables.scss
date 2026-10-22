@@ -1,0 +1,181 @@
+// =============================================================================
+// Pulse Theory: tokens de marca y variables de Bootstrap
+// -----------------------------------------------------------------------------
+// Se importa ANTES de bootstrap/scss/variables. Bootstrap declara todo con
+// `!default` ("asigna solo si no existe"), así que lo que definimos aquí gana
+// y se propaga a componentes, utilidades y variables CSS --bs-*.
+// Contrastes de la paleta: docs/DESIGN.md §3.
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// 1. Paleta de marca
+// -----------------------------------------------------------------------------
+$ink:      #0e0f12; // fondo
+$graphite: #1c1e24; // tarjetas, inputs, acordeón
+$line:     #2a2d35; // bordes decorativos
+$rule:     #737985; // bordes de inputs (≥ 3:1 sobre graphite)
+$chalk:    #f4f4f0; // texto
+$steel:    #9aa0aa; // texto secundario
+$volt:     #c6f432; // acento
+
+// -----------------------------------------------------------------------------
+// 2. Colores de tema
+// Bootstrap genera botones, utilidades (.bg-*, .text-*) y variables CSS a partir
+// de estos colores, así que basta con cambiarlos aquí.
+// -----------------------------------------------------------------------------
+$primary:   $volt;
+$secondary: $graphite;
+$success:   $volt;
+$danger:    #ff6b6b;
+$dark:      $ink;
+
+// color-contrast() elige el color de texto que va sobre cada color de tema.
+// Sobre Volt elige el "oscuro": así es nuestro Ink y no #000. Sobre Graphite, Chalk.
+$color-contrast-dark:  $ink;
+$color-contrast-light: $chalk;
+
+// Elementos "activos" (casilla marcada, switch encendido): fondo Volt.
+// Por defecto el texto/ícono es blanco, que sobre Volt no tiene contraste → Ink.
+$component-active-bg:    $volt;
+$component-active-color: $ink;
+
+// -----------------------------------------------------------------------------
+// 3. Opciones globales
+// -----------------------------------------------------------------------------
+$enable-shadows:          false; // bordes de 1px en lugar de sombras (look técnico)
+$enable-negative-margins: true;  // .mt-n5 etc. para superponer elementos en el hero
+// $enable-rfs y $enable-dark-mode ya son true por defecto.
+
+// -----------------------------------------------------------------------------
+// 4. Modo oscuro (<html data-bs-theme="dark">)
+// Las variables *-dark alimentan las --bs-* dentro de [data-bs-theme=dark], y
+// todos los componentes las heredan: no hace falta repintar cada uno.
+// -----------------------------------------------------------------------------
+$body-bg-dark:                  $ink;
+$body-color-dark:               $chalk;
+$body-emphasis-color-dark:      #fff;
+$body-secondary-color-dark:     $steel;
+$body-secondary-bg-dark:        $graphite;
+$body-tertiary-color-dark:      $steel; // el valor por defecto (50 % de opacidad) no llega a AA
+$body-tertiary-bg-dark:         $graphite;
+$border-color-dark:             $line;
+$border-color-translucent-dark: rgba($chalk, .1);
+$link-color-dark:               $volt;
+$primary-text-emphasis-dark:    $volt;
+$form-valid-color-dark:         $volt;
+$form-valid-border-color-dark:  $volt;
+$form-invalid-color-dark:       $danger;
+$form-invalid-border-color-dark: $danger;
+
+// -----------------------------------------------------------------------------
+// 5. Tipografía (las fuentes locales se cargan en _fonts.scss, F2)
+// -----------------------------------------------------------------------------
+$font-family-sans-serif: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-size-base:         1.0625rem; // 17px: más legible sobre fondo oscuro
+$line-height-base:       1.6;
+
+$headings-font-family:   "Space Grotesk", $font-family-sans-serif;
+$headings-font-weight:   700;
+$headings-line-height:   1.1;
+$h1-font-size:           $font-size-base * 3;    // RFS lo reduce en móvil
+$h2-font-size:           $font-size-base * 2.25;
+$h3-font-size:           $font-size-base * 1.5;
+
+$display-font-family:    $headings-font-family;
+$display-font-weight:    700;
+$display-line-height:    1;
+
+// Sin subrayado en la navegación; en el texto corrido se subraya con una clase propia (F2).
+$link-decoration:        none;
+$link-hover-decoration:  underline;
+
+// -----------------------------------------------------------------------------
+// 6. Espaciado y grid
+// Las utilidades p-*/m-*/gap-* recorren $spacers: al añadir 6 y 7 aparecen
+// solas .py-6, .py-lg-7, etc. para el ritmo entre secciones.
+// -----------------------------------------------------------------------------
+$spacer: 1rem;
+$spacers: (
+  0: 0,
+  1: $spacer * .25,
+  2: $spacer * .5,
+  3: $spacer,
+  4: $spacer * 1.5,
+  5: $spacer * 3,
+  6: $spacer * 4.5,
+  7: $spacer * 6,
+);
+$grid-gutter-width: 2rem;
+
+// -----------------------------------------------------------------------------
+// 7. Bordes y foco
+// -----------------------------------------------------------------------------
+$border-radius:     .75rem;
+$border-radius-sm:  .5rem;
+$border-radius-lg:  1.25rem;
+$border-radius-xl:  1.75rem;
+$border-radius-xxl: 2.5rem;
+
+// Bootstrap deriva $focus-ring-color de $primary y esta opacidad.
+// Al 50 %, el anillo Volt destaca sobre cualquier superficie oscura.
+$focus-ring-opacity: .5;
+
+// -----------------------------------------------------------------------------
+// 8. Botones: tipo píldora, el rasgo distintivo de la marca
+// -----------------------------------------------------------------------------
+$btn-padding-y:        .875rem;
+$btn-padding-x:        1.75rem;
+$btn-padding-y-lg:     1.125rem;
+$btn-padding-x-lg:     2.25rem;
+$btn-font-weight:      500;
+$btn-border-radius:    50rem;
+$btn-border-radius-sm: 50rem;
+$btn-border-radius-lg: 50rem;
+
+// -----------------------------------------------------------------------------
+// 9. Formularios
+// Los inputs usan $rule como borde (en lugar del borde decorativo $line) para
+// cumplir 3:1 en componentes de interfaz (WCAG 1.4.11).
+// -----------------------------------------------------------------------------
+$input-padding-y:          .75rem;
+$input-padding-x:          1rem;
+$input-bg:                 $graphite;
+$input-border-color:       $rule;
+$input-focus-border-color: $volt;
+$input-placeholder-color:  $steel;
+$form-label-font-weight:   500;
+
+$form-check-input-border:  1px solid $rule;
+$form-switch-color-dark:   $steel; // perilla del switch apagado
+
+// -----------------------------------------------------------------------------
+// 10. Componentes
+// -----------------------------------------------------------------------------
+$card-bg:             $graphite;
+$card-border-color:   $line;
+$card-border-radius:  $border-radius-lg;
+$card-spacer-y:       1.75rem;
+$card-spacer-x:       1.75rem;
+$card-cap-bg:         transparent;
+
+// Acordeón (FAQ): ícono +/− en lugar del chevron que gira.
+$accordion-bg:                     $graphite;
+$accordion-border-color:           $line;
+$accordion-button-padding-y:       1.25rem;
+$accordion-button-active-bg:       $graphite;
+$accordion-button-active-color:    $volt;
+$accordion-icon-transform:         none;
+$accordion-icon-color-dark:        $chalk;
+$accordion-icon-active-color-dark: $volt;
+$accordion-button-icon-dark:        url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='#{$accordion-icon-color-dark}' stroke-width='1.75' stroke-linecap='round'><path d='M8 3v10M3 8h10'/></svg>");
+$accordion-button-active-icon-dark: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='#{$accordion-icon-active-color-dark}' stroke-width='1.75' stroke-linecap='round'><path d='M3 8h10'/></svg>");
+
+$badge-font-weight:   500;
+$badge-padding-y:     .4em;
+$badge-padding-x:     .8em;
+$badge-border-radius: 50rem;
+
+// Navbar dentro de data-bs-theme="dark" usa las variables navbar-dark-*.
+$navbar-dark-color:        rgba($chalk, .8);
+$navbar-dark-hover-color:  $volt;
+$navbar-dark-active-color: $chalk;
