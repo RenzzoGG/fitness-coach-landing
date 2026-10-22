@@ -322,7 +322,7 @@ fitness-coach-landing/
   4. `esbuild src/js/main.js --bundle --minify --format=esm --target=es2020 --outfile=dist/js/main.js`
   5. `node scripts/hash-assets.mjs`: hash del contenido en los nombres (ver "Cache-busting").
 - **Imágenes dentro del build** (`scripts/images.mjs`, F10): cada JPG de `src/img` → 480/800/1200 px × AVIF (q50), WebP (q72) y JPEG mozjpeg (q75) en `dist/img`. Las variantes se guardan en `.cache/img` (ignorada por git) y solo se recodifican si el original es más nuevo: build en frío ~11 s, con caché ~0.4 s. No hay binarios generados en el repo; en Railway el build siempre parte en frío.
-- `npm run dev`: `scripts/dev.mjs` usa la API de esbuild (watch + `serve` sobre `dist/`), lanza `sass --watch` y vuelve a copiar `index.html` al detectar cambios. Sin dependencias extra (nada de `concurrently` ni `browser-sync`).
+- `npm run dev`: `scripts/dev.mjs` usa la API de esbuild (watch + `serve`), lanza `sass --watch` y vuelve a copiar `index.html` al detectar cambios. Sin dependencias extra (nada de `concurrently` ni `browser-sync`). **Escribe en `.cache/dev/`, nunca en `dist/`** (corregido en F11: un dev server abierto metía en `dist/` un `main.js` sin minificar ni hash). `npm run verify` falla si vuelve a pasar.
 - `browserslist` en `package.json`: `"> 0.5%, last 2 versions, not dead"`, igual que Bootstrap.
 - Script cargado con `<script type="module" src="js/main.js">` (diferido por naturaleza).
 
@@ -369,7 +369,7 @@ fitness-coach-landing/
   3. el HTML (rutas relativas, `srcset` y las URLs absolutas de `og:image`/`twitter:image`).
 - **Por qué hash en el nombre y no `?v=`:** el nombre cambia solo si cambia el contenido (comprobado: tocar un estilo solo cambia el hash del CSS; dos builds iguales dan los mismos 26 nombres); funciona con cualquier caché, aunque ignore el query string; las versiones vieja y nueva conviven durante el deploy; y permite cachear estos archivos un año.
 - **Sin hash (nombre fijo):** `index.html`, `favicon.svg`, los íconos PNG, `site.webmanifest` y `robots.txt`.
-- **En dev no se hashea:** `npm run dev` sirve `css/main.css` y `js/main.js` tal cual. `npm run size` y `npm run check` encuentran el archivo con o sin hash (`scripts/dist-files.mjs`).
+- **En dev no se hashea:** `npm run dev` sirve `css/main.css` y `js/main.js` tal cual, desde `.cache/dev/`. `npm run size` y `npm run check` encuentran el archivo con o sin hash (`scripts/dist-files.mjs`).
 - **Headers previstos para F12:** assets con hash → `Cache-Control: public, max-age=31536000, immutable`; `index.html` → `no-cache` (se revalida siempre, porque es el que apunta a los hashes nuevos). Cloudflare respeta los headers del origen. **El HTML nunca debe cachearse largo** (ni con una regla "Cache Everything" sin purgar en cada deploy).
 
 ### Deploy (decisión pendiente, fase F12)
