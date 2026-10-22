@@ -22,6 +22,19 @@ $utilities: map.merge(
   )
 );
 
+// Quitar .text-secondary: pinta con el color de TEMA secondary ($graphite), que
+// sobre Ink es ilegible (1.3:1). El texto secundario es .text-body-secondary,
+// que usa --bs-secondary-color (Steel en modo oscuro, 7.3:1).
+$utilities: map.merge(
+  $utilities,
+  (
+    "color": map.merge(
+      map.get($utilities, "color"),
+      (values: map.remove(map.get($utilities, "color", "values"), "secondary")),
+    ),
+  )
+);
+
 // Quitar familias que este sitio no usa (docs/DESIGN.md §5.5).
 $utilities: map.remove(
   $utilities,

@@ -24,6 +24,7 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 - **Personaliza con variables antes que con CSS.** Si existe una variable de Bootstrap (`$btn-*`, `$card-*`, `$accordion-*`, `$input-*`, `$form-switch-*`…), úsala en lugar de sobrescribir la clase. CSS propio solo para lo que Bootstrap no cubre, en `src/scss/components/`.
 - **Importa solo los módulos que se usan.** Añadir un módulo requiere justificarlo y reflejarlo en DESIGN.md.
 - Modo oscuro con `data-bs-theme="dark"` y las variables `*-dark` (no "pintar encima").
+- Texto secundario: **`.text-body-secondary`** (usa `--bs-secondary-color` = Steel). `.text-secondary` está eliminada a propósito: usaba el color de tema `$secondary` (Graphite), ilegible sobre Ink.
 - Utilidades nuevas o eliminadas: siempre mediante la Utility API en `_utilities.scss`.
 - JS de Bootstrap: **solo Collapse** (`import Collapse from 'bootstrap/js/dist/collapse'`). Nada de Popper ni del bundle completo.
 - Compilar con `--quiet-deps --silence-deprecation=import`; no se migra a `@use` (Bootstrap 5.3 no lo soporta).
