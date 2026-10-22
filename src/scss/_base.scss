@@ -109,7 +109,7 @@ h1, h2, h3, h4,
   }
 }
 
-// Animaciones de scroll (las activa reveal.js en F9).
+// Animaciones de scroll (reveal.js añade .is-visible con IntersectionObserver).
 // El estado oculto solo se aplica si hay JS (clase .js en <html>) y el usuario
 // no pidió reducir el movimiento: en cualquier otro caso todo se ve desde el inicio.
 @media (prefers-reduced-motion: no-preference) {
@@ -120,5 +120,20 @@ h1, h2, h3, h4,
       opacity: 0;
       transform: translateY(1.5rem);
     }
+
+    // Columnas de tarjetas: escalonado por posición, sin JS ni HTML extra.
+    &:nth-child(2) { transition-delay: 80ms; }
+    &:nth-child(3) { transition-delay: 160ms; }
   }
+
+  // Failsafe: .js se pone en el <head>, pero si el módulo JS no llega a cargar
+  // (error de red, bloqueador) nadie añadiría .is-visible y el contenido quedaría
+  // oculto. Sin .reveal-ready (lo pone reveal.js), todo aparece a los 2 s.
+  .js:not(.reveal-ready) .reveal:not(.is-visible) {
+    animation: reveal-failsafe 0s 2s forwards;
+  }
+}
+
+@keyframes reveal-failsafe {
+  to { opacity: 1; transform: none; }
 }

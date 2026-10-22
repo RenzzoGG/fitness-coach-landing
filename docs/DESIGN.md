@@ -345,6 +345,9 @@ fitness-coach-landing/
   }
   ```
   Una línea inline en el `<head>` añade la clase `js` a `<html>`. Sin JS o con reduced-motion, todo el contenido se ve desde el inicio.
+  - **Failsafe (F9):** si `.js` está pero el módulo no llega a cargar, nadie añadiría `.is-visible`. Mientras `<html>` no tenga `.reveal-ready` (lo pone `reveal.js` al iniciar), una animación `reveal-failsafe` con 2 s de retraso muestra el contenido igualmente.
+  - Escalonado de columnas con `.reveal:nth-child(2|3)` y `transition-delay` (80 y 160 ms), sin JS ni HTML extra.
+  - El hero no lleva `.reveal`: es el LCP y debe pintarse de inmediato.
 
 ### SEO y Open Graph
 - `<title>Pulse Theory — Online Strength & Performance Coaching (Demo)</title>`, `meta description`, `canonical`, `theme-color: #0E0F12`, `og:type/title/description/url/image/image:width/image:height/image:alt`, `twitter:card=summary_large_image`, favicon SVG, `apple-touch-icon` y `site.webmanifest`.
