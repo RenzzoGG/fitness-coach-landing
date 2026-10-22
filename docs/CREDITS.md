@@ -17,3 +17,7 @@ Descarga: CDN de Pexels a 1200 px de ancho (`?auto=compress&cs=tinysrgb&w=1200`)
 
 ## Historial
 - **F3 → reemplazadas antes de F5:** `hero-coaching-session.jpg` (Thomas Ronveaux, 13951240) y `about-coach-portrait.jpg` (Asso Myron, 32695885). En las dos se veía la cara de una persona reconocible presentada como coach de la marca.
+
+## Íconos
+- **WhatsApp** (botón flotante): trazado de [Simple Icons](https://simpleicons.org/) 13.21.0, licencia [CC0-1.0](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md). El logotipo es marca de WhatsApp/Meta; se usa solo para indicar que el enlace abre WhatsApp.
+- El resto de íconos (logo de pulso, checks, valores) son SVG propios del proyecto.

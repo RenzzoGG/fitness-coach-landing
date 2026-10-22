@@ -258,7 +258,9 @@ Botones con `aria-expanded` y `aria-controls`, que gestiona Collapse. El primer 
 ### 6.9 Botón flotante de WhatsApp
 - `<a href="https://wa.me/15555550123?text=Hi%20Pulse%20Theory%21%20I%27d%20like%20to%20book%20a%20free%20consultation." target="_blank" rel="noopener" aria-label="Chat on WhatsApp (opens in a new tab)">` con SVG en línea (`aria-hidden="true"`).
 - El número **555** está reservado para ficción en EE. UU., así que no contacta a nadie real.
-- Posición `fixed` abajo a la derecha, con área táctil ≥ 48×48 px, que respeta el área segura (`env(safe-area-inset-bottom)`) y no tapa el botón de envío del formulario en móvil.
+- Posición `fixed` abajo a la derecha, 56×56 px (área táctil ≥ 48 px), que respeta el área segura (`bottom: max(1rem, env(safe-area-inset-bottom))`). Fondo Volt con ícono Ink (15:1), en la paleta de la marca en lugar del verde de WhatsApp.
+- En móvil (< 768 px), `.site-footer` reserva 4.5rem abajo para que el botón no tape la última línea; el CTA del formulario está antes del footer, así que el scroll lo deja libre.
+- Ícono: trazado de Simple Icons (CC0), en línea y con `aria-hidden`; crédito en `docs/CREDITS.md`.
 
 ## 7. Estructura de archivos
 

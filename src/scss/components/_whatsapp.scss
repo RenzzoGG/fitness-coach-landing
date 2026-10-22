@@ -1,0 +1,32 @@
+// =============================================================================
+// Botón flotante de WhatsApp
+// =============================================================================
+@use "sass:map";
+
+.whatsapp-float {
+  position: fixed;
+  right: map.get($spacers, 3);
+  // Respeta el área segura de iPhone (barra de inicio) si es mayor que 1rem.
+  bottom: max(#{map.get($spacers, 3)}, env(safe-area-inset-bottom));
+  z-index: $zindex-fixed;
+  display: grid;
+  place-items: center;
+  width: 3.5rem;  // 56px: área táctil por encima de los 48px recomendados
+  height: 3.5rem;
+  color: $ink;    // 15:1 sobre Volt
+  background-color: $volt;
+  border-radius: 50%;
+
+  &:hover {
+    color: $ink;
+    background-color: tint-color($volt, 30%);
+  }
+}
+
+// En móvil el botón queda sobre el final de la página: el footer reserva
+// espacio para que no tape su última línea.
+@include media-breakpoint-down(md) {
+  .site-footer {
+    padding-bottom: 4.5rem;
+  }
+}
