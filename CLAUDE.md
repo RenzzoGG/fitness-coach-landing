@@ -43,6 +43,7 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 - **Mobile first:** estilos base para móvil y breakpoints hacia arriba (`media-breakpoint-up`). Sin scroll horizontal a 320 px.
 - **Accesibilidad:** contraste AA (la paleta está en DESIGN.md §3; nunca texto blanco sobre Volt), `<label>` en todos los inputs, foco visible, navegación completa con teclado, landmarks, un solo `h1`, `alt` descriptivos.
 - **Rendimiento:** fuentes locales woff2 (solo latin), imágenes AVIF/WebP con `width`/`height` y lazy-load (menos el hero), sin peticiones a terceros.
+- **Meta final de peso:** CSS ≤ 130 KB min / ≤ 20 KB gzip, JS ≤ 15 KB min. Comprobar con `npm run size` al cerrar cada fase. **No se sube nunca:** si no se cumple, detenerse y proponer qué recortar.
 - Nunca edites `dist/` a mano: es generado e ignorado por git.
 
 ## Honestidad (marca ficticia)

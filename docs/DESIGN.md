@@ -314,7 +314,9 @@ fitness-coach-landing/
 ### Rendimiento
 - **Imágenes:** `<picture>` con AVIF → WebP → JPG de respaldo, `srcset`/`sizes`, `width`/`height` explícitos (evita CLS), `loading="lazy"` y `decoding="async"` en todo menos el hero.
 - **Fuentes:** locales, solo latin, `preload` de las 2 críticas y `font-display: swap`.
-- **Metas de peso:** CSS **≤ 120 KB minificado / ≤ 18 KB gzip** y JS ≤ 15 KB minificado.
+- **Metas de peso (FINALES):** CSS **≤ 130 KB minificado / ≤ 20 KB gzip** y JS **≤ 15 KB minificado**.
+  - **Esta meta no se vuelve a subir.** Si una fase la supera, se detiene el trabajo y se propone qué recortar (utilidades, submódulos, CSS propio) antes de continuar. `npm run size` se ejecuta al cerrar cada fase.
+  - Historial: 60/12 KB (estimación sin medir, F0) → 120/18 KB (F1, se superó por 0.2 KB en F2 al añadir los estilos base) → 130/20 KB (final, fijada por el usuario antes de F3).
   - La meta inicial de CSS (60 KB / 12 KB) era una estimación hecha sin medir. En F1 se comprobó que solo podía alcanzarse quitando componentes que usamos o con PurgeCSS (descartado). Mediciones de F1: Bootstrap completo 231.8 KB / 30.9 KB → módulos selectivos 166 KB / 22.4 KB → con submódulos de forms y utilidades responsive limitadas, 117.9 KB / 17.7 KB.
 - Sin CDNs ni peticiones a terceros.
 
@@ -345,7 +347,7 @@ Cada fase termina con una verificación concreta y uno o más commits pequeños 
 | Fase | Alcance | Verificación ✔ |
 |---|---|---|
 | **F0 · Scaffolding** | `npm init`, instalar las dependencias aprobadas, `browserslist`, scripts `build`/`dev`, `scripts/build.mjs`, `scripts/dev.mjs`, `index.html` mínimo y `main.scss` que importa todo Bootstrap (para tener un tamaño de referencia) | `npm run build` genera `dist/`; `npm run dev` sirve la página; tamaño de referencia del CSS anotado |
-| **F1 · Tokens de Sass** | `_variables.scss` (paleta, tipografía, radios, spacers, modo oscuro), imports selectivos y `_utilities.scss` | Compila sin errores ni avisos propios; un botón `.btn-primary` de prueba sale Volt con texto Ink y forma de píldora; CSS ≤ 120 KB min / ≤ 18 KB gzip |
+| **F1 · Tokens de Sass** | `_variables.scss` (paleta, tipografía, radios, spacers, modo oscuro), imports selectivos y `_utilities.scss` | Compila sin errores ni avisos propios; un botón `.btn-primary` de prueba sale Volt con texto Ink y forma de píldora; CSS ≤ 130 KB min / ≤ 20 KB gzip (meta final) |
 | **F2 · Fuentes y base** | `_fonts.scss`, copia de woff2 en el build, `preload`, `_base.scss` (rejilla, foco, tipografía de títulos) y skip link | En la pestaña Network solo hay fuentes de `localhost`; el skip link aparece con Tab |
 | **F3 · Navbar + Hero** | Marcado y estilos del navbar y el hero; `main.js` con Collapse | El menú móvil abre y cierra con teclado y `aria-expanded` cambia; JS ≤ 15 KB; sin scroll horizontal a 320 px |
 | **F4 · About + How it works** | Secciones 01 y 03, con fotos de stock gratuito (Unsplash o Pexels) acreditadas en el footer | Se revisa en 375, 768 y 1280 px; la jerarquía de títulos es correcta (comprobada con extensión o axe) |
