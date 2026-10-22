@@ -175,7 +175,24 @@ $badge-padding-y:     .4em;
 $badge-padding-x:     .8em;
 $badge-border-radius: 50rem;
 
-// Navbar dentro de data-bs-theme="dark" usa las variables navbar-dark-*.
-$navbar-dark-color:        rgba($chalk, .8);
-$navbar-dark-hover-color:  $volt;
-$navbar-dark-active-color: $chalk;
+// Navbar: las variables navbar-dark-* SOLO se aplican a .navbar[data-bs-theme="dark"],
+// no las hereda de <html>. Por eso el <nav> también lleva data-bs-theme="dark".
+$navbar-padding-y:                 1rem;
+$navbar-nav-link-padding-x:        1rem;
+$navbar-brand-font-size:           1.125rem;
+$navbar-toggler-padding-y:         .5rem;
+$navbar-toggler-padding-x:         .625rem;
+$navbar-dark-color:                rgba($chalk, .8); // 12.6:1 sobre Ink
+$navbar-dark-hover-color:          $volt;
+$navbar-dark-active-color:         $chalk;
+$navbar-dark-brand-color:          $chalk;
+$navbar-dark-brand-hover-color:    $chalk;
+$navbar-dark-toggler-border-color: $rule;            // 3:1 o más: es un control
+
+// .ratio: añadimos 4x5 (fotos verticales) y quitamos 21x9, que no usamos.
+// Cada entrada genera una clase .ratio-*, así que solo dejamos las necesarias.
+$aspect-ratios: (
+  "1x1": 100%,
+  "4x5": calc(5 / 4 * 100%),
+  "16x9": calc(9 / 16 * 100%),
+);

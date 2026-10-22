@@ -90,6 +90,20 @@ h1, h2, h3, h4,
   mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
 }
 
+// Flecha de los botones: se desplaza en hover (solo con movimiento permitido).
+.btn-arrow {
+  display: inline-block;
+  margin-left: .5em;
+
+  @media (prefers-reduced-motion: no-preference) {
+    transition: transform .2s ease;
+
+    .btn:hover > & {
+      transform: translateX(.25em);
+    }
+  }
+}
+
 // Animaciones de scroll (las activa reveal.js en F9).
 // El estado oculto solo se aplica si hay JS (clase .js en <html>) y el usuario
 // no pidió reducir el movimiento: en cualquier otro caso todo se ve desde el inicio.

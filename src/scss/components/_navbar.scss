@@ -1,0 +1,55 @@
+// =============================================================================
+// Navbar: lo que no cubren las variables $navbar-*
+// =============================================================================
+@use "sass:map";
+
+// Fondo semitransparente con desenfoque: el contenido pasa por debajo al hacer scroll.
+.site-header {
+  background-color: rgba($ink, .85);
+  border-bottom: 1px solid $line;
+  backdrop-filter: blur(12px);
+}
+
+.navbar-brand {
+  display: inline-flex;
+  gap: .5rem;
+  align-items: center;
+  font-family: $headings-font-family;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.brand-mark {
+  flex-shrink: 0;
+  color: $volt;
+}
+
+.navbar .nav-link {
+  font-weight: 500;
+}
+
+// Menú móvil desplegado: separación del logo y del CTA.
+// Desde lg el menú es horizontal y esto deja de aplicar.
+@include media-breakpoint-down(lg) {
+  .navbar-collapse {
+    padding-block: map.get($spacers, 3);
+  }
+
+  .navbar-nav .nav-link {
+    padding-block: .75rem;
+    border-bottom: 1px solid $line;
+  }
+
+  .navbar-cta {
+    margin-top: map.get($spacers, 4);
+  }
+}
+
+// Desde lg, el CTA se separa de los enlaces. Va aquí y no como .ms-lg-3,
+// porque margin-start no está entre las utilidades responsive (_utilities.scss).
+@include media-breakpoint-up(lg) {
+  .navbar-cta {
+    margin-left: map.get($spacers, 3);
+  }
+}

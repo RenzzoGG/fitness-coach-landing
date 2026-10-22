@@ -1,0 +1,77 @@
+// =============================================================================
+// Hero
+// =============================================================================
+@use "sass:map";
+
+.hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-title-accent {
+  color: $volt;
+}
+
+// Datos del servicio bajo los CTA: separados por una línea fina, no son estadísticas.
+.hero-facts {
+  border-top: 1px solid $line;
+
+  dt {
+    font-family: $headings-font-family;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -.02em;
+  }
+
+  dd {
+    margin-bottom: 0;
+    font-size: $small-font-size;
+    color: $steel;
+  }
+}
+
+// Foto en un marco con borde de 1px; .ratio-4x5 (de Bootstrap) reserva el
+// espacio antes de que cargue la imagen y evita saltos de layout (CLS).
+.hero-media {
+  border: 1px solid $line;
+  border-radius: $border-radius-xl;
+  overflow: hidden;
+
+  img {
+    object-fit: cover;
+  }
+}
+
+// Etiqueta flotante sobre la foto.
+.hero-tag {
+  position: absolute;
+  bottom: map.get($spacers, 3);
+  left: map.get($spacers, 3);
+  display: inline-flex;
+  gap: .5rem;
+  align-items: center;
+  padding: .5rem 1rem;
+  font-size: $small-font-size;
+  font-weight: 500;
+  color: $chalk;
+  background-color: rgba($ink, .8);
+  border: 1px solid $line;
+  border-radius: $border-radius-pill;
+  backdrop-filter: blur(8px);
+}
+
+// Punto "en vivo" que late; sin animación si el usuario pidió reducir movimiento.
+.hero-tag-dot {
+  width: .5rem;
+  height: .5rem;
+  background-color: $volt;
+  border-radius: 50%;
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-dot {
+  50% { opacity: .35; }
+}

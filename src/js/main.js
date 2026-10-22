@@ -1,2 +1,7 @@
-// Punto de entrada del JS. Aquí se importarán Collapse de Bootstrap (F3)
-// y los módulos propios: precios, formulario y animaciones.
+// Punto de entrada del JS.
+// Importar Collapse activa su data API: cualquier [data-bs-toggle="collapse"]
+// (botón del navbar, acordeón del FAQ) funciona sin instanciarlo a mano.
+import 'bootstrap/js/src/collapse.js';
+import { initNavbar } from './navbar.js';
+
+initNavbar();

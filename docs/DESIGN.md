@@ -170,7 +170,9 @@ Reglas de uso:
 
 ### 5.8 JavaScript de Bootstrap: solo Collapse
 - Lo único interactivo de Bootstrap que usamos es **Collapse**: el menú hamburguesa del navbar y el acordeón del FAQ.
-- `import Collapse from 'bootstrap/js/dist/collapse'` en `src/js/main.js`. Al importarlo se activa su *data API* (`data-bs-toggle="collapse"`), así que no hace falta instanciarlo a mano.
+- `import 'bootstrap/js/src/collapse.js'` en `src/js/main.js`. Al importarlo se activa su *data API* (`data-bs-toggle="collapse"`), así que no hace falta instanciarlo a mano.
+- **Por qué `js/src` y no `js/dist`** (medido en F3): `js/dist/collapse.js` es un módulo UMD que trae sus dependencias envueltas en CommonJS, y esbuild no puede descartar nada, así que el bundle queda en 18.0 KB min. `js/src` es el mismo código en módulos ES: 12.0 KB min (4.6 KB gzip). La contrapartida es que `js/src` no es la ruta de importación documentada y su estructura interna podría cambiar entre versiones menores, por eso `bootstrap` se mantiene con versión exacta (`5.3.8`).
+- `src/js/navbar.js` usa la API de Collapse (`Collapse.getOrCreateInstance(menu, { toggle: false }).hide()`) para cerrar el menú móvil al elegir un enlace.
 - **Por qué no `import { Collapse } from 'bootstrap'`:** cada plugin de Bootstrap ejecuta código al cargarse (registra listeners), así que esbuild no puede descartar los que no usamos y terminaríamos con todo el bundle.
 - **No necesitamos Popper:** solo lo usan dropdowns, tooltips y popovers.
 
