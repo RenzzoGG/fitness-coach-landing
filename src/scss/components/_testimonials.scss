@@ -24,3 +24,9 @@
   background-color: $volt;
   border-radius: 50%;
 }
+
+// El pie va fuera de .card-body (figcaption debe ser hijo directo de <figure>):
+// mismo padding que el cuerpo, sin el de arriba.
+.testimonial-caption {
+  padding: 0 $card-spacer-x $card-spacer-y;
+}
