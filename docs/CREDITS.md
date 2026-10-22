@@ -3,14 +3,17 @@
 Todas las fotos son de **Pexels** y se usan bajo la [Pexels License](https://www.pexels.com/license/):
 uso gratuito, se permite modificarlas y el crédito no es obligatorio (lo damos igualmente en el footer).
 
-Restricciones que respetamos:
-- **No dar a entender que las personas de las fotos respaldan la marca.** Pulse Theory es ficticia, y "Coach Mateo Ríos" es un personaje inventado. Junto al retrato de la sección About hay una nota visible que dice que es una foto de stock y que la persona no tiene relación con el proyecto.
-- No mostrar a las personas de forma negativa ni ofensiva.
-- No usar las imágenes como logotipo o marca, ni redistribuirlas como stock.
+## Criterio: personas no identificables
+La licencia prohíbe dar a entender que las personas de las fotos respaldan la marca. Pulse Theory y "Coach Mateo Ríos" son ficticios, así que **solo usamos fotos donde nadie se pueda identificar**: de espaldas, en silueta, de lejos o encuadradas en manos y equipo. Así no hace falta ninguna nota aclaratoria junto a las fotos.
+
+También respetamos el resto de la licencia: no mostrar a las personas de forma negativa, no usar las imágenes como logotipo o marca y no redistribuirlas como stock.
 
 | Archivo (`src/img/`) | Uso | Foto original | Autor |
 |---|---|---|---|
-| `hero-coaching-session.jpg` | Hero | [Man weightlifting and another man looking at him](https://www.pexels.com/photo/man-weightlifting-and-another-man-looking-at-him-13951240/) | [Thomas Ronveaux](https://www.pexels.com/@thomasronveaux/) |
-| `about-coach-portrait.jpg` | About | [Fitness coach in gym setting showing confidence](https://www.pexels.com/photo/fitness-coach-in-gym-setting-showing-confidence-32695885/) | [Asso Myron](https://www.pexels.com/@assomyron/) |
+| `hero-dumbbell-grip.jpg` | Hero | [Hand Gripping Dumbbell in Dimly Lit Gym](https://www.pexels.com/photo/hand-gripping-dumbbell-in-dimly-lit-gym-37281143/) | [Dishant Babariya](https://www.pexels.com/@dsbabariya/) |
+| `about-coaching-hands.jpg` | About | [Woman training on machine with personal coach](https://www.pexels.com/photo/woman-training-on-machine-with-personal-coach-6551429/) | [Andres Ayrton](https://www.pexels.com/@andres-ayrton/) |
 
 Descarga: CDN de Pexels a 1200 px de ancho (`?auto=compress&cs=tinysrgb&w=1200`), 1200×1800 JPEG. En F10, `scripts/images.mjs` generará las versiones AVIF/WebP a partir de estos archivos.
+
+## Historial
+- **F3 → reemplazadas antes de F5:** `hero-coaching-session.jpg` (Thomas Ronveaux, 13951240) y `about-coach-portrait.jpg` (Asso Myron, 32695885). En las dos se veía la cara de una persona reconocible presentada como coach de la marca.

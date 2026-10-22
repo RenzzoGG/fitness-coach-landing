@@ -197,7 +197,7 @@ Orden en la página (anclas entre paréntesis). Los textos son borradores en ing
 ### 6.2 About (`#about`)
 - `01 — Meet your coach`. Foto, bio corta de Mateo Ríos (ficticio): *"I spent 8 years coaching in-person before moving online. My approach is simple: progressive strength training, sustainable nutrition habits and honest feedback every week."*
 - Credenciales genéricas en badges ("Certified strength coach", "Nutrition coaching certified", "8 years coaching"), sin nombres de certificaciones reales.
-- **Nota bajo la foto (obligatoria):** *"Stock photo by Asso Myron on Pexels. The person shown is a model, not affiliated with this demo — Coach Mateo Ríos and his credentials are fictional."* La licencia de Pexels prohíbe dar a entender que la persona de la foto respalda la marca (ver `docs/CREDITS.md`).
+- **Foto sin persona identificable** (manos del coach guiando el agarre de un cliente). Las fotos del sitio nunca muestran caras reconocibles, para no dar a entender que alguien real respalda la marca ficticia (ver `docs/CREDITS.md`).
 - 3 valores en mini-tarjetas: **Evidence-based**, **Built around you**, **Accountability that sticks**.
 
 ### 6.3 Programs (`#programs`)
