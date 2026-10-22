@@ -273,7 +273,7 @@ fitness-coach-landing/
 ├── scripts/
 │   ├── build.mjs        # limpia dist/ y copia HTML, static, fuentes e imágenes optimizadas
 │   ├── dev.mjs          # watch de Sass + esbuild + servidor local (esbuild serve)
-│   ├── images.mjs       # sharp: originales → AVIF/WebP en varios anchos
+│   ├── images.mjs       # sharp: originales → AVIF/WebP/JPEG en 480/800/1200 (caché en .cache/img)
 │   └── og.mjs           # sharp: genera og-image.png de 1200×630
 ├── src/
 │   ├── index.html
@@ -320,13 +320,14 @@ fitness-coach-landing/
   2. `sass --load-path=node_modules --style=compressed --no-source-map --quiet-deps --silence-deprecation=import src/scss/main.scss dist/css/main.css`
   3. `postcss dist/css/main.css --replace --no-map --use autoprefixer`
   4. `esbuild src/js/main.js --bundle --minify --format=esm --target=es2020 --outfile=dist/js/main.js`
-- `npm run images` y `npm run og` se ejecutan aparte (solo cuando cambian los originales) y escriben en `src/img/optimized/`. Así el build normal es rápido y no depende de sharp.
+- **Imágenes dentro del build** (`scripts/images.mjs`, F10): cada JPG de `src/img` → 480/800/1200 px × AVIF (q50), WebP (q72) y JPEG mozjpeg (q75) en `dist/img`. Las variantes se guardan en `.cache/img` (ignorada por git) y solo se recodifican si el original es más nuevo: build en frío ~11 s, con caché ~0.4 s. No hay binarios generados en el repo; en Railway el build siempre parte en frío.
 - `npm run dev`: `scripts/dev.mjs` usa la API de esbuild (watch + `serve` sobre `dist/`), lanza `sass --watch` y vuelve a copiar `index.html` al detectar cambios. Sin dependencias extra (nada de `concurrently` ni `browser-sync`).
 - `browserslist` en `package.json`: `"> 0.5%, last 2 versions, not dead"`, igual que Bootstrap.
 - Script cargado con `<script type="module" src="js/main.js">` (diferido por naturaleza).
 
 ### Rendimiento
-- **Imágenes:** `<picture>` con AVIF → WebP → JPG de respaldo, `srcset`/`sizes`, `width`/`height` explícitos (evita CLS), `loading="lazy"` y `decoding="async"` en todo menos el hero.
+- **Imágenes:** `<picture>` con AVIF → WebP → JPG de respaldo, `srcset`/`sizes`, `width`/`height` explícitos (evita CLS), `loading="lazy"` y `decoding="async"` en todo menos el hero (`fetchpriority="high"`). Dentro de `.ratio`, el hijo absoluto es `<picture>` y la `img` lleva `width/height: 100%` + `object-fit: cover`.
+  - Medido en F10: los JPG originales pesaban 236.7 KB entre las dos fotos; un móvil 375 px 2× descarga ahora 39.2 KB (AVIF 800w, −83 %) y un escritorio 1440 px 2×, 73.5 KB (−69 %).
 - **Fuentes:** locales, solo latin, `preload` de las 2 críticas y `font-display: swap`.
 - **Metas de peso (FINALES):** CSS **≤ 130 KB minificado / ≤ 20 KB gzip** y JS **≤ 15 KB minificado**.
   - **Esta meta no se vuelve a subir.** Si una fase la supera, se detiene el trabajo y se propone qué recortar (utilidades, submódulos, CSS propio) antes de continuar. `npm run size` se ejecuta al cerrar cada fase.

@@ -6,12 +6,12 @@ import { spawn } from 'node:child_process';
 import { watch } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
-import { build, copyHtml, copyImages, copyStatic } from './build.mjs';
+import { build, copyHtml, copyStatic, generateImages } from './build.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const port = Number(process.env.PORT) || 5173;
 
-build();
+await build();
 
 // Primero el servidor: si el puerto está ocupado falla aquí, antes de lanzar
 // sass, y no deja ningún proceso huérfano.
@@ -48,7 +48,7 @@ const sass = spawn(
 
 watch(`${root}src/index.html`, () => copyHtml());
 watch(`${root}src/static`, { recursive: true }, () => copyStatic());
-watch(`${root}src/img`, { recursive: true }, () => copyImages());
+watch(`${root}src/img`, { recursive: true }, () => generateImages());
 
 console.log(`\n  Pulse Theory dev server → http://localhost:${port}\n`);
 

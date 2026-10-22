@@ -16,7 +16,8 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 ## Comandos
 - `npm run dev`: watch de Sass y JS más un servidor local sobre `dist/`.
 - `npm run build`: build de producción en `dist/`.
-- `npm run images` / `npm run og`: regeneran las imágenes optimizadas y la imagen OG (solo cuando cambian los originales).
+- `npm run check`: verifica que cada clase del HTML exista en el CSS. `npm run size`: peso del CSS y del JS.
+- Las imágenes responsive se generan dentro del build (`scripts/images.mjs`, con caché en `.cache/img`).
 
 ## Reglas de Bootstrap y Sass
 - Bootstrap **solo desde su fuente Sass** (`bootstrap/scss/*`). Nunca `bootstrap.min.css` ni CDNs.

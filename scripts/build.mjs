@@ -1,7 +1,9 @@
-// Prepara dist/: lo limpia y copia los archivos que no pasan por Sass ni esbuild
-// (HTML, archivos estáticos y fuentes). CSS y JS los generan los scripts de npm.
+// Prepara dist/: lo limpia, copia los archivos que no pasan por Sass ni esbuild
+// (HTML, estáticos y fuentes) y genera las imágenes responsive.
+// CSS y JS los generan los scripts de npm.
 import { cpSync, mkdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { buildImages } from './images.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 export const dist = `${root}dist`;
@@ -23,9 +25,8 @@ export function copyStatic() {
   cpSync(`${root}src/static`, dist, { recursive: true });
 }
 
-// Provisional hasta F10 (images.mjs generará AVIF/WebP): copia los JPG tal cual.
-export function copyImages() {
-  cpSync(`${root}src/img`, `${dist}/img`, { recursive: true });
+export function generateImages() {
+  return buildImages(`${root}src/img`, `${root}.cache/img`, `${dist}/img`);
 }
 
 export function copyFonts() {
@@ -39,17 +40,17 @@ export function copyFonts() {
   }
 }
 
-export function build() {
+export async function build() {
   rmSync(dist, { recursive: true, force: true });
   mkdirSync(dist, { recursive: true });
   copyHtml();
   copyStatic();
-  copyImages();
   copyFonts();
+  return generateImages();
 }
 
 // Ejecutado directamente (npm run build:static), no importado desde dev.mjs.
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  build();
-  console.log('dist/ ready (html, static, images, fonts)');
+  const encoded = await build();
+  console.log(`dist/ ready (html, static, fonts, images: ${encoded} encoded, rest from .cache)`);
 }
