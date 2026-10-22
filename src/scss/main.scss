@@ -1,6 +1,48 @@
-// Funciones primero: _variables.scss las puede usar (tint-color, rgba…).
+// =============================================================================
+// Pulse Theory: punto de entrada de Sass
+// El orden importa; explicación completa en docs/DESIGN.md §5.2.
+// =============================================================================
+
+// 1. Funciones: las necesita _variables.scss (tint-color, rgba…)
 @import "bootstrap/scss/functions";
-// Mis variables ANTES que las de Bootstrap (ver comentario en _variables.scss).
+
+// 2. Mis variables, ANTES que las de Bootstrap (!default respeta las mías)
 @import "variables";
-// Temporal: Bootstrap completo. El siguiente paso lo sustituye por imports selectivos.
-@import "bootstrap/scss/bootstrap";
+
+// 3. Configuración de Bootstrap
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+@import "theme-colors";                // recorta $theme-colors antes de que maps lo use
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/utilities";
+
+// 4. Ajustes a la Utility API
+@import "utilities";
+
+// 5. Solo los módulos que usamos
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";   // .collapsing (menú y acordeón)
+@import "bootstrap/scss/nav";           // .nav-link, base del navbar
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/accordion";
+@import "bootstrap/scss/badge";
+// forms.scss solo es un índice de submódulos: importamos los que usamos
+// (sin form-range, floating-labels ni input-group).
+@import "bootstrap/scss/forms/labels";
+@import "bootstrap/scss/forms/form-text";
+@import "bootstrap/scss/forms/form-control";
+@import "bootstrap/scss/forms/form-select";
+@import "bootstrap/scss/forms/form-check";   // incluye .form-switch
+@import "bootstrap/scss/forms/validation";
+@import "bootstrap/scss/helpers";       // .visually-hidden(-focusable), .ratio, .focus-ring, .stretched-link
+@import "bootstrap/scss/utilities/api"; // genera las utilidades; siempre al final de Bootstrap
+
+// 6. Estilos propios (F2 en adelante)

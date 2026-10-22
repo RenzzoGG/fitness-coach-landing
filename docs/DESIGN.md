@@ -74,6 +74,7 @@ Reglas de uso:
 // 3. Configuración de Bootstrap
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/variables-dark";
+@import "theme-colors";                // recorta $theme-colors (info, warning, light) antes de maps
 @import "bootstrap/scss/maps";
 @import "bootstrap/scss/mixins";
 @import "bootstrap/scss/utilities";
@@ -95,7 +96,13 @@ Reglas de uso:
 @import "bootstrap/scss/card";
 @import "bootstrap/scss/accordion";
 @import "bootstrap/scss/badge";
-@import "bootstrap/scss/forms";
+// forms.scss es solo un índice: importamos los submódulos que usamos
+@import "bootstrap/scss/forms/labels";
+@import "bootstrap/scss/forms/form-text";
+@import "bootstrap/scss/forms/form-control";
+@import "bootstrap/scss/forms/form-select";
+@import "bootstrap/scss/forms/form-check";   // incluye .form-switch
+@import "bootstrap/scss/forms/validation";
 @import "bootstrap/scss/helpers";       // .visually-hidden, .ratio, .focus-ring, .stretched-link
 @import "bootstrap/scss/utilities/api"; // genera las clases utilitarias; siempre va al final de Bootstrap
 
@@ -109,7 +116,9 @@ Reglas de uso:
 
 **¿Por qué `functions` va antes que mis variables?** Para poder usar `tint-color()`, `shade-color()` o `rgba()` al definir mis tonos.
 
-**Módulos excluidos** (no se compilan, así que no pesan): `modal`, `dropdown`, `tooltip`, `popover`, `carousel`, `toasts`, `offcanvas`, `tables`, `pagination`, `breadcrumb`, `list-group`, `progress`, `spinners`, `alert`, `close`, `button-group`, `placeholders`.
+**Módulos excluidos** (no se compilan, así que no pesan): `modal`, `dropdown`, `tooltip`, `popover`, `carousel`, `toasts`, `offcanvas`, `tables`, `pagination`, `breadcrumb`, `list-group`, `progress`, `spinners`, `alert`, `close`, `button-group`, `placeholders`. Tampoco los submódulos de forms `form-range`, `floating-labels` ni `input-group`.
+
+**Colores de tema recortados** (`_theme-colors.scss`): `map.remove($theme-colors, "info", "warning", "light")` después de `variables` y antes de `maps`. `maps` deriva de `$theme-colors` el mapa `$theme-colors-rgb`, del que salen `.btn-*`, `.bg-*`, `.text-*`, `.border-*`, `.link-*` y `.text-bg-*`, así que cada color quitado elimina todas esas clases.
 
 ### 5.3 Modo oscuro: la vía oficial de la 5.3
 - Ponemos `<html data-bs-theme="dark">` y sobrescribimos las variables `*-dark` de Bootstrap: `$body-bg-dark: $ink`, `$body-color-dark: $chalk`, `$body-secondary-color-dark: $steel`, `$body-tertiary-bg-dark: $graphite`, `$border-color-dark: $line`, `$headings-color-dark: $chalk`, `$link-color-dark: $volt`, `$form-invalid-color-dark: $danger`, `$form-valid-color-dark: $volt`, etc.
@@ -142,7 +151,9 @@ Reglas de uso:
 ### 5.5 Utility API (`src/scss/_utilities.scss`)
 - Bootstrap genera las utilidades a partir del mapa `$utilities`. Lo modificamos **entre** `@import "bootstrap/scss/utilities"` y `@import "bootstrap/scss/utilities/api"`:
   - **Añadir** con `map-merge`, por ejemplo una utilidad `ls` (letter-spacing: `.ls-tight`, `.ls-wide`).
-  - **Quitar** con `map-remove` las familias que no usaremos (p. ej. `user-select`, `pointer-events`, `object-fit`, variantes de `opacity` que no hagan falta). La lista definitiva se decide en F1, midiendo el tamaño del CSS antes y después.
+  - **Quitar** con `map.remove` las familias que no usamos: `align` (vertical-align), `float`, `object-fit`, `shadow`, `translate-middle`, `subtle-border-color`, `border-opacity`, `viewport-width`, `min-viewport-width`, `viewport-height`, `min-viewport-height`, `font-family`, `word-wrap`, `text-opacity`, `link-opacity`, `link-offset`, `link-underline`, `link-underline-opacity`, `bg-opacity`, `subtle-background-color`, `gradient`, `user-select`, `pointer-events`, `rounded-top`, `rounded-end`, `rounded-bottom`, `rounded-start`.
+  - **Variantes responsive solo para el layout:** cada familia responsive se repite en los 5 breakpoints (~12 KB por breakpoint). Un `@each` pone `responsive: false` en todas menos `display`, `flex-direction`, `justify-content`, `align-items`, `order`, `text-align`, `margin-x`, `margin-bottom`, `padding-y` y `gap`. Ejemplo: existe `.py-lg-7`, pero no `.mt-md-3`. Si más adelante hace falta otra, se añade a `$responsive-utilities`.
+  - Usamos `@use "sass:map"` y `@use "sass:list"` (`map.merge`, `map.remove`, `list.index`): las funciones globales `map-merge`, etc. están obsoletas y darían avisos en nuestro propio código.
 
 ### 5.6 Qué evita el "look de plantilla Bootstrap"
 1. Rejilla técnica de fondo en el hero, hecha con `linear-gradient` (sin imágenes).
@@ -229,7 +240,7 @@ Botones con `aria-expanded` y `aria-controls`, que gestiona Collapse. El primer 
 ### 6.8 Footer
 - Wordmark, enlaces de las secciones y redes ficticias (`href="#"` con `aria-disabled`, o mejor omitirlas).
 - Aviso obligatorio: **"Pulse Theory is a fictional brand. This is a demo project by Renzzo G. — renzzogg.com"** (con enlace a renzzogg.com).
-- Créditos de fotos, si se usan imágenes de stock.
+- Créditos de las fotos de stock (Unsplash o Pexels): autor y enlace a la foto original.
 
 ### 6.9 Botón flotante de WhatsApp
 - `<a href="https://wa.me/15555550123?text=Hi%20Pulse%20Theory%21%20I%27d%20like%20to%20book%20a%20free%20consultation." target="_blank" rel="noopener" aria-label="Chat on WhatsApp (opens in a new tab)">` con SVG en línea (`aria-hidden="true"`).
@@ -302,7 +313,8 @@ fitness-coach-landing/
 ### Rendimiento
 - **Imágenes:** `<picture>` con AVIF → WebP → JPG de respaldo, `srcset`/`sizes`, `width`/`height` explícitos (evita CLS), `loading="lazy"` y `decoding="async"` en todo menos el hero.
 - **Fuentes:** locales, solo latin, `preload` de las 2 críticas y `font-display: swap`.
-- **Metas de peso** (se miden en F1/F3 y se ajustan con datos reales): CSS ≤ 60 KB minificado (≤ 12 KB gzip), frente a ~230 KB de `bootstrap.min.css`; JS ≤ 15 KB minificado.
+- **Metas de peso:** CSS **≤ 120 KB minificado / ≤ 18 KB gzip** y JS ≤ 15 KB minificado.
+  - La meta inicial de CSS (60 KB / 12 KB) era una estimación hecha sin medir. En F1 se comprobó que solo podía alcanzarse quitando componentes que usamos o con PurgeCSS (descartado). Mediciones de F1: Bootstrap completo 231.8 KB / 30.9 KB → módulos selectivos 166 KB / 22.4 KB → con submódulos de forms y utilidades responsive limitadas, 117.9 KB / 17.7 KB.
 - Sin CDNs ni peticiones a terceros.
 
 ### Accesibilidad
@@ -332,10 +344,10 @@ Cada fase termina con una verificación concreta y uno o más commits pequeños 
 | Fase | Alcance | Verificación ✔ |
 |---|---|---|
 | **F0 · Scaffolding** | `npm init`, instalar las dependencias aprobadas, `browserslist`, scripts `build`/`dev`, `scripts/build.mjs`, `scripts/dev.mjs`, `index.html` mínimo y `main.scss` que importa todo Bootstrap (para tener un tamaño de referencia) | `npm run build` genera `dist/`; `npm run dev` sirve la página; tamaño de referencia del CSS anotado |
-| **F1 · Tokens de Sass** | `_variables.scss` (paleta, tipografía, radios, spacers, modo oscuro), imports selectivos y `_utilities.scss` | Compila sin errores ni avisos propios; un botón `.btn-primary` de prueba sale Volt con texto Ink y forma de píldora; tamaño del CSS frente a la referencia de F0 |
+| **F1 · Tokens de Sass** | `_variables.scss` (paleta, tipografía, radios, spacers, modo oscuro), imports selectivos y `_utilities.scss` | Compila sin errores ni avisos propios; un botón `.btn-primary` de prueba sale Volt con texto Ink y forma de píldora; CSS ≤ 120 KB min / ≤ 18 KB gzip |
 | **F2 · Fuentes y base** | `_fonts.scss`, copia de woff2 en el build, `preload`, `_base.scss` (rejilla, foco, tipografía de títulos) y skip link | En la pestaña Network solo hay fuentes de `localhost`; el skip link aparece con Tab |
 | **F3 · Navbar + Hero** | Marcado y estilos del navbar y el hero; `main.js` con Collapse | El menú móvil abre y cierra con teclado y `aria-expanded` cambia; JS ≤ 15 KB; sin scroll horizontal a 320 px |
-| **F4 · About + How it works** | Secciones 01 y 03, más la decisión sobre la fuente de las fotos (stock con licencia libre y crédito, o ilustración) | Se revisa en 375, 768 y 1280 px; la jerarquía de títulos es correcta (comprobada con extensión o axe) |
+| **F4 · About + How it works** | Secciones 01 y 03, con fotos de stock gratuito (Unsplash o Pexels) acreditadas en el footer | Se revisa en 375, 768 y 1280 px; la jerarquía de títulos es correcta (comprobada con extensión o axe) |
 | **F5 · Programs + switch** | Tarjetas de precios, `.form-switch` reestilizado y `pricing-toggle.js` | El switch alterna los precios con clic y con Space; `aria-live` anuncia el cambio; sin JS se ven los mensuales |
 | **F6 · Results + FAQ** | Testimonios con el badge "Sample testimonial" y la nota; acordeón reestilizado | Los badges y la nota se ven; el acordeón funciona con Tab, Enter y Space |
 | **F7 · Formulario** | Campos, `form-validation.js` y éxito simulado; preselección del plan desde las tarjetas | Enviar vacío muestra los errores y enfoca el primero; un email inválido da un mensaje específico; un envío válido muestra el estado de éxito y el aviso de demo |

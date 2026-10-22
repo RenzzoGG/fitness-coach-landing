@@ -1,0 +1,77 @@
+// =============================================================================
+// Ajustes a la Utility API
+// -----------------------------------------------------------------------------
+// Bootstrap genera las clases utilitarias recorriendo el mapa $utilities en
+// bootstrap/scss/utilities/api. Lo modificamos entre utilities y utilities/api.
+// =============================================================================
+@use "sass:list";
+@use "sass:map"; // módulo moderno: map.merge/map.remove (las versiones globales están obsoletas)
+
+// Añadir: letter-spacing → .ls-tight, .ls-wide
+$utilities: map.merge(
+  $utilities,
+  (
+    "letter-spacing": (
+      property: letter-spacing,
+      class: ls,
+      values: (
+        tight: -.03em,
+        wide: .12em,
+      ),
+    ),
+  )
+);
+
+// Quitar familias que este sitio no usa (docs/DESIGN.md §5.5).
+$utilities: map.remove(
+  $utilities,
+  "align",                // vertical-align
+  "float",
+  "object-fit",
+  "shadow",               // $enable-shadows: false; usamos bordes
+  "translate-middle",
+  "subtle-border-color",
+  "border-opacity",
+  "viewport-width",
+  "min-viewport-width",
+  "viewport-height",
+  "min-viewport-height",
+  "font-family",          // .font-monospace
+  "word-wrap",
+  "text-opacity",
+  "link-opacity",
+  "link-offset",
+  "link-underline",
+  "link-underline-opacity",
+  "bg-opacity",
+  "subtle-background-color",
+  "gradient",
+  "user-select",
+  "pointer-events",
+  "rounded-top",
+  "rounded-end",
+  "rounded-bottom",
+  "rounded-start"
+);
+
+// Variantes responsive (.d-md-flex, .py-lg-7…) solo para familias de layout.
+// Cada familia responsive se repite en los 5 breakpoints (~12 KB por breakpoint);
+// en el resto basta la versión base, mobile first. Recorte medido: ~40 KB min.
+$responsive-utilities: (
+  "display",
+  "flex-direction",
+  "justify-content",
+  "align-items",
+  "order",
+  "text-align",
+  "margin-x",
+  "margin-bottom",
+  "padding-y",
+  "gap",
+);
+
+@each $key, $utility in $utilities {
+  @if map.get($utility, responsive) == true and not list.index($responsive-utilities, $key) {
+    $utilities: map.merge($utilities, ($key: map.merge($utility, (responsive: false))));
+  }
+}

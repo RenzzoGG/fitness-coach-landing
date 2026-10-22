@@ -1,0 +1,10 @@
+// =============================================================================
+// Recorte del mapa $theme-colors
+// -----------------------------------------------------------------------------
+// Va DESPUÉS de bootstrap/scss/variables (el mapa ya existe) y ANTES de
+// bootstrap/scss/maps (que deriva de él $theme-colors-rgb, y de ahí salen
+// .btn-*, .bg-*, .text-*, .border-*, .link-*, .text-bg-*).
+// Cada color quitado elimina todas esas clases. No usamos info, warning ni light.
+// =============================================================================
+@use "sass:map"; // módulo moderno: map.merge/map.remove (las versiones globales están obsoletas)
+$theme-colors: map.remove($theme-colors, "info", "warning", "light");
