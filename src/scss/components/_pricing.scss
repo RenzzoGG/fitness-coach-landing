@@ -5,6 +5,38 @@
 // =============================================================================
 @use "sass:map";
 
+// Interruptor mensual/anual: .form-switch de Bootstrap (colores y foco ya
+// salen de $form-switch-* y $component-active-*). Aquí solo layout y tamaño.
+// display: flex va aquí y no como .d-flex: así [hidden] (con !important en
+// reboot) sigue ocultándolo hasta que el JS lo muestra.
+.billing-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem 1rem;
+  align-items: center;
+
+  .form-switch {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    min-height: 0;
+    padding-left: 0;
+    margin-bottom: 0;
+  }
+
+  // El switch se dibuja en em: subir font-size lo agranda sin tocar su SVG.
+  .form-check-input {
+    float: none;
+    margin: 0;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+}
+
+.billing-option {
+  font-weight: 500;
+}
+
 // Destacada: borde Volt. Bootstrap expone el borde de la tarjeta como variable
 // CSS (--bs-card-border-color), así que basta con cambiarla en vez de
 // redefinir la propiedad border.

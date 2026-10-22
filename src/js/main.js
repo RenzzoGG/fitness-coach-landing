@@ -3,5 +3,7 @@
 // (botón del navbar, acordeón del FAQ) funciona sin instanciarlo a mano.
 import 'bootstrap/js/src/collapse.js';
 import { initNavbar } from './navbar.js';
+import { initPricingToggle } from './pricing-toggle.js';
 
 initNavbar();
+initPricingToggle();

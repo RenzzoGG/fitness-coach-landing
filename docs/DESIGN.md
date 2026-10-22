@@ -203,6 +203,10 @@ Orden en la página (anclas entre paréntesis). Los textos son borradores en ing
 ### 6.3 Programs (`#programs`)
 - `02 — Programs`. Switch **Monthly / Annual** (`.form-check.form-switch` de Bootstrap, que ya incluye `role="switch"`) con badge `Save 20%`.
 - Región `aria-live="polite"` visualmente oculta que anuncia: *"Showing annual prices, billed yearly."*
+- El nombre accesible del switch es su `<label>` "Annual" (encendido = precios anuales); el texto "Monthly" a la izquierda es decorativo (`aria-hidden`).
+- El contenedor lleva `hidden` y lo muestra `pricing-toggle.js`: sin JS no aparece un control que no hace nada. **No usa `.d-flex`**: las utilidades llevan `!important` y se compilan después de `[hidden]{display:none !important}` de reboot, así que lo dejarían visible. El `display: flex` va en `_pricing.scss`.
+- Space alterna el switch de forma nativa; el JS añade Enter (`input.click()`, que dispara `change` igual que el ratón).
+- La nota anual se calcula (`annual × 12`), no se repite en el HTML. `priceFor()` es una función pura probada en Node.
 
 | Plan | Mensual | Anual (por mes, facturado al año) | Para quién |
 |---|---|---|---|

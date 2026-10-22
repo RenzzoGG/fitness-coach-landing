@@ -140,7 +140,17 @@
           </div>
         </div>
 
-        <!-- F5 (siguiente commit): interruptor mensual/anual -->
+        <!-- hidden: sin JS el interruptor no haría nada, así que solo lo muestra pricing-toggle.js.
+             Sin .d-flex a propósito: su !important ganaría a [hidden] y lo dejaría visible. -->
+        <div class="billing-toggle mb-5" hidden>
+          <span class="billing-option" aria-hidden="true">Monthly</span>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="billing-switch">
+            <label class="form-check-label billing-option" for="billing-switch">Annual</label>
+          </div>
+          <span class="badge text-bg-primary">Save 20%</span>
+        </div>
+        <p id="billing-status" class="visually-hidden" aria-live="polite"></p>
 
         <div class="row row-cols-1 row-cols-lg-3 g-4">
           <div class="col">
