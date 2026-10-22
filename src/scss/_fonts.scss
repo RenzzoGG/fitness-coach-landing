@@ -1,0 +1,25 @@
+// =============================================================================
+// Fuentes locales (archivos de @fontsource, copiados a dist/fonts por build.mjs)
+// -----------------------------------------------------------------------------
+// No importamos el CSS de @fontsource: incluye todos los subconjuntos
+// (cirílico, griego, vietnamita…). Declaramos solo latin en woff2.
+// font-display: swap → el texto se ve al instante con la fuente de respaldo.
+// Sin unicode-range: solo sirve para evitar la descarga si la página no usa
+// esos caracteres, y un sitio en inglés siempre los usa.
+// =============================================================================
+$font-files: (
+  "Space Grotesk" "space-grotesk" (500, 700),
+  "DM Sans" "dm-sans" (400, 500, 700),
+);
+
+@each $family, $slug, $weights in $font-files {
+  @each $weight in $weights {
+    @font-face {
+      font-family: $family;
+      font-style: normal;
+      font-weight: $weight;
+      font-display: swap;
+      src: url("../fonts/#{$slug}-latin-#{$weight}-normal.woff2") format("woff2");
+    }
+  }
+}

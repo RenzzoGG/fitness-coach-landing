@@ -45,4 +45,5 @@
 @import "bootstrap/scss/helpers";       // .visually-hidden(-focusable), .ratio, .focus-ring, .stretched-link
 @import "bootstrap/scss/utilities/api"; // genera las utilidades; siempre al final de Bootstrap
 
-// 6. Estilos propios (F2 en adelante)
+// 6. Estilos propios
+@import "fonts";
