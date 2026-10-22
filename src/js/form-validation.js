@@ -41,6 +41,12 @@ export function initBookingForm() {
     if (target.classList.contains('is-invalid')) validate(target);
   });
 
+  // Los CTA de Programs llevan data-plan: al ir al formulario, el plan queda elegido.
+  document.addEventListener('click', ({ target }) => {
+    const link = target.closest('[data-plan]');
+    if (link) form.elements.plan.value = link.dataset.plan;
+  });
+
   form.addEventListener('submit', (event) => {
     event.preventDefault();
     submitted = true;
