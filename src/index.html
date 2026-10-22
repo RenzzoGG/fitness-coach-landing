@@ -177,9 +177,10 @@
           </div>
         </div>
 
-        <!-- hidden: sin JS el interruptor no haría nada, así que solo lo muestra pricing-toggle.js.
-             Sin .d-flex a propósito: su !important ganaría a [hidden] y lo dejaría visible. -->
-        <div class="billing-toggle mb-5" hidden>
+        <!-- Sin JS el interruptor no haría nada: el CSS solo lo muestra con la clase .js de <html>
+             (puesta en el <head> antes de pintar), así no aparece después y no desplaza las tarjetas (CLS).
+             Sin .d-flex a propósito: su !important ganaría a la regla que lo oculta. -->
+        <div class="billing-toggle mb-5">
           <span class="billing-option" aria-hidden="true">Monthly</span>
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="billing-switch">

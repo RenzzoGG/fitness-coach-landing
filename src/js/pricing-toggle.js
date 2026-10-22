@@ -12,7 +12,6 @@ export function initPricingToggle() {
   const status = document.getElementById('billing-status');
   if (!input || !status) return;
 
-  const toggle = input.closest('.billing-toggle');
   const section = input.closest('section');
 
   const render = () => {
@@ -33,5 +32,4 @@ export function initPricingToggle() {
 
   // Si el navegador restauró el estado del checkbox (atrás/adelante), lo respetamos.
   if (input.checked) render();
-  toggle.hidden = false;
 }

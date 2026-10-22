@@ -7,10 +7,11 @@
 
 // Interruptor mensual/anual: .form-switch de Bootstrap (colores y foco ya
 // salen de $form-switch-* y $component-active-*). Aquí solo layout y tamaño.
-// display: flex va aquí y no como .d-flex: así [hidden] (con !important en
-// reboot) sigue ocultándolo hasta que el JS lo muestra.
+// Solo se muestra con JS (clase .js en <html>, puesta en el <head> antes del
+// primer pintado): el control no aparece más tarde ni desplaza las tarjetas
+// (sin CLS). display va aquí y no como .d-flex: su !important no se podría anular.
 .billing-toggle {
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   gap: .75rem 1rem;
   align-items: center;
@@ -31,6 +32,10 @@
     font-size: 1.5rem;
     cursor: pointer;
   }
+}
+
+.js .billing-toggle {
+  display: flex;
 }
 
 .billing-option {
