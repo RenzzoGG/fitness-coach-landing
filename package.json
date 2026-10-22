@@ -15,7 +15,7 @@
     "size": "node scripts/size.mjs",
     "check": "node scripts/check-classes.mjs",
     "og": "node scripts/og.mjs",
-    "verify": "node scripts/verify-html.mjs",
+    "verify": "html-validate dist/index.html && node scripts/verify-html.mjs",
     "preview": "node scripts/preview.mjs"
   },
   "browserslist": [
@@ -29,6 +29,7 @@
     "autoprefixer": "10.6.1",
     "bootstrap": "5.3.8",
     "esbuild": "0.28.2",
+    "html-validate": "11.17.0",
     "postcss": "8.5.31",
     "postcss-cli": "12.0.0",
     "sass": "1.106.1",

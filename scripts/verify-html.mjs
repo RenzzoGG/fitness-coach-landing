@@ -1,6 +1,7 @@
-// Auditoría estática del build de producción (dist/), sin navegador ni dependencias.
-// No sustituye a un validador completo (W3C/html-validate): comprueba las reglas
-// que más se rompen en una landing y que se pueden verificar leyendo el HTML.
+// Auditoría estática del build de producción (dist/), sin navegador.
+// npm run verify ejecuta antes html-validate (reglas del estándar HTML); este
+// script añade lo propio del proyecto: anclas y referencias ARIA, landmarks,
+// skip link, meta/OG con URLs absolutas y referencias rotas en el build.
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -99,6 +100,7 @@ for (const el of elements) {
     check(!nested, `Línea ${el.line}: <${el.tag}> dentro de <${nested?.tag}> (interactivo anidado)`);
   }
   if (el.tag === 'source') check(el.parent.tag === 'picture', `Línea ${el.line}: <source> fuera de <picture>`);
+  if (el.tag === 'figcaption') check(el.parent.tag === 'figure', `Línea ${el.line}: <figcaption> debe ser hijo directo de <figure>`);
 }
 
 // ---------------------------------------------------------------------------

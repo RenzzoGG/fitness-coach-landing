@@ -18,7 +18,7 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 - `npm run preview`: sirve `dist/` (el build de producción, con hashes) en http://localhost:4173. Es el que se usa para Lighthouse.
 - `npm run build`: build de producción en `dist/`.
 - `npm run check`: verifica que cada clase del HTML exista en el CSS. `npm run size`: peso del CSS y del JS.
-- `npm run verify`: auditoría estática de `dist/` (estructura HTML, ids, títulos, anclas, ARIA, etiquetas, imágenes, landmarks, meta/OG y referencias rotas). Ejecutar `build`, `check`, `verify` y `size` al cerrar cada fase.
+- `npm run verify`: `html-validate` (estándar HTML, preset recommended) + auditoría propia de `dist/` (estructura HTML, ids, títulos, anclas, ARIA, etiquetas, imágenes, landmarks, meta/OG y referencias rotas). Ejecutar `build`, `check`, `verify` y `size` al cerrar cada fase.
 - Las imágenes responsive se generan dentro del build (`scripts/images.mjs`, con caché en `.cache/img`).
 - `npm run og`: regenera `src/static/og-image.png` (versionada). Solo hace falta si cambia la marca o el titular.
 
@@ -40,7 +40,7 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 - Animaciones: respetar siempre `prefers-reduced-motion`.
 
 ## Dependencias
-- Aprobadas: `bootstrap`, `sass`, `postcss`, `postcss-cli`, `autoprefixer`, `esbuild`, `@fontsource/space-grotesk`, `@fontsource/dm-sans`, `sharp`.
+- Aprobadas: `bootstrap`, `sass`, `postcss`, `postcss-cli`, `autoprefixer`, `esbuild`, `@fontsource/space-grotesk`, `@fontsource/dm-sans`, `sharp`, `html-validate` (validación del estándar HTML en `npm run verify`).
 - **Cualquier dependencia nueva requiere preguntar antes** y explicar para qué sirve.
 
 ## Calidad
