@@ -36,3 +36,20 @@ export async function buildImages(srcDir, cacheDir, outDir) {
   cpSync(cacheDir, outDir, { recursive: true });
   return jobs.length;
 }
+
+// Íconos PNG a partir de favicon.svg (sin texto, así que no depende de Pango).
+// Fondo Ink a sangre: iOS rellena la transparencia de apple-touch-icon con negro
+// y redondea las esquinas por su cuenta. Nombres fijos en la raíz: iOS pide
+// /apple-touch-icon.png por convención y el manifest los referencia por nombre.
+export async function buildIcons(svgPath, outDir) {
+  const icons = { 'apple-touch-icon.png': 180, 'icon-192.png': 192, 'icon-512.png': 512 };
+  await Promise.all(
+    Object.entries(icons).map(([file, size]) =>
+      sharp(svgPath, { density: (72 * size) / 32 }) // el SVG mide 32 px
+        .resize(size, size)
+        .flatten({ background: '#0e0f12' })
+        .png({ compressionLevel: 9 })
+        .toFile(`${outDir}/${file}`),
+    ),
+  );
+}

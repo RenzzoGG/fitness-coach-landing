@@ -1,12 +1,16 @@
 // Prepara dist/: lo limpia, copia los archivos que no pasan por Sass ni esbuild
 // (HTML, estáticos y fuentes) y genera las imágenes responsive.
 // CSS y JS los generan los scripts de npm.
-import { cpSync, mkdirSync, rmSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { buildImages } from './images.mjs';
+import { buildIcons, buildImages } from './images.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 export const dist = `${root}dist`;
+
+// Dominio final: la única fuente de las URLs absolutas (canonical, og:*, twitter:*).
+// Se puede cambiar sin tocar el HTML: SITE_URL=https://otro.dominio npm run build
+export const SITE_URL = (process.env.SITE_URL ?? 'https://pulse.renzzogg.com').replace(/\/$/, '');
 
 // Solo los woff2 que declara _fonts.scss (subconjunto latin).
 const fonts = [
@@ -18,14 +22,16 @@ const fonts = [
 ];
 
 export function copyHtml() {
-  cpSync(`${root}src/index.html`, `${dist}/index.html`);
+  const html = readFileSync(`${root}src/index.html`, 'utf8').replaceAll('%SITE_URL%', SITE_URL);
+  writeFileSync(`${dist}/index.html`, html);
 }
 
 export function copyStatic() {
   cpSync(`${root}src/static`, dist, { recursive: true });
 }
 
-export function generateImages() {
+export async function generateImages() {
+  await buildIcons(`${root}src/static/favicon.svg`, dist);
   return buildImages(`${root}src/img`, `${root}.cache/img`, `${dist}/img`);
 }
 

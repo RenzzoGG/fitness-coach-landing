@@ -6,8 +6,35 @@
   <!-- Marca que hay JS antes de pintar: las animaciones de scroll solo ocultan contenido si hay JS -->
   <script>document.documentElement.classList.add('js')</script>
   <title>Pulse Theory — Online Strength &amp; Performance Coaching (Demo)</title>
-  <meta name="description" content="Pulse Theory is a fictional online strength and performance coaching brand. Demo landing page.">
+  <meta name="description" content="Online strength coaching built around your schedule: personalized programs, weekly check-ins and a free consultation. A fictional demo brand.">
+  <!-- %SITE_URL% lo reemplaza build.mjs (constante SITE_URL): todas las URLs absolutas salen de ahí -->
+  <link rel="canonical" href="%SITE_URL%/">
+  <meta name="theme-color" content="#0e0f12">
+  <meta name="color-scheme" content="dark">
+
+  <!-- Open Graph (Facebook, LinkedIn, WhatsApp, Slack…) -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Pulse Theory">
+  <meta property="og:title" content="Pulse Theory — Train with intent">
+  <meta property="og:description" content="Online strength coaching built around your schedule: personalized programs, weekly check-ins and a free consultation. A fictional demo brand.">
+  <meta property="og:url" content="%SITE_URL%/">
+  <meta property="og:image" content="%SITE_URL%/og-image.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Pulse Theory: Train with intent. Get strong for real life. A hand gripping a dumbbell in a dark gym.">
+  <meta property="og:locale" content="en_US">
+
+  <!-- X / Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Pulse Theory — Train with intent">
+  <meta name="twitter:description" content="Online strength coaching built around your schedule: personalized programs, weekly check-ins and a free consultation. A fictional demo brand.">
+  <meta name="twitter:image" content="%SITE_URL%/og-image.png">
+  <meta name="twitter:image:alt" content="Pulse Theory: Train with intent. Get strong for real life. A hand gripping a dumbbell in a dark gym.">
+
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
   <!-- Precarga solo las 2 fuentes que se ven al cargar la página (títulos y texto) -->
   <link rel="preload" href="fonts/space-grotesk-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
