@@ -405,6 +405,21 @@ fitness-coach-landing/
   - Probado en local con el binario oficial de Caddy 2.11.7 (`caddy validate` y `caddy fmt` sin cambios, más curl a cada tipo de archivo).
 - **`railway.json`:** builder `RAILPACK`, `buildCommand: "SITE_URL=https://pulse.renzzogg.com npm run build"` (el dominio queda versionado, no solo en el panel), healthcheck en `/health` y reinicio `ON_FAILURE`. `RAILPACK_SPA_OUTPUT_DIR` no se puede poner ahí: es una variable del servicio en Railway. Node se elige según `engines.node`.
 - **Cloudflare:** SSL/TLS en **Full** (Railway: "Full (Strict) will not work as intended" con proxy), Universal SSL activo, Browser Cache TTL en "Respect existing headers" y **ninguna regla "Cache Everything" sobre el HTML**.
+- **Verificado en producción** (curl a `https://pulse.renzzogg.com`, 2026-10-22). Todo coincide con lo esperado:
+
+| Recurso | Codificación | Cache-Control | cf-cache-status |
+|---|---|---|---|
+| HTML (`/`) | br / gzip (zstd si el navegador lo pide) | `no-cache` | DYNAMIC |
+| CSS y JS con hash | br (14 992 B y 4 890 B) / gzip | 1 año, `immutable` | MISS → HIT |
+| woff2, AVIF, OG PNG | — (ya comprimidos) | 1 año, `immutable` | MISS → HIT |
+| favicon.svg, robots.txt | br | `max-age=86400` | MISS → HIT |
+| Íconos PNG | — | `max-age=86400` | MISS |
+| site.webmanifest | br, `application/manifest+json` | `max-age=86400` | DYNAMIC |
+| 404 (con hash o ruta inexistente) | — | `no-store` | BYPASS / DYNAMIC |
+| `http://` | 301 → `https://` | — | — |
+
+  - **HTML en zstd:** Cloudflare recomprime lo que no guarda en caché según el `Accept-Encoding` del navegador (en el plan Free prefiere zstd). Es equivalente a brotli. A los assets que sí guarda en caché les mantiene el br del origen.
+  - **Manifest DYNAMIC:** `.webmanifest` no está en la lista de extensiones que Cloudflare guarda por defecto. No se corrige: pesa 184 B y el navegador lo guarda 1 día.
 
 ## 9. Plan por fases
 

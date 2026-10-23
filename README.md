@@ -6,7 +6,7 @@ Built with **Bootstrap 5.3 customized through Sass** and **vanilla JavaScript**,
 
 > **Demo project.** Pulse Theory and "Coach Mateo Ríos" do not exist. Testimonials are labeled as samples, the booking form sends no data, and the WhatsApp number is a fictional 555 number.
 
-- **Live:** https://pulse.renzzogg.com (once deployed)
+- **Live:** https://pulse.renzzogg.com
 - **Author:** Renzzo Gracia Gomez · [renzzogg.com](https://renzzogg.com)
 
 ## Highlights
