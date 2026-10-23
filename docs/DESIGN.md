@@ -321,14 +321,15 @@ fitness-coach-landing/
   3. `postcss dist/css/main.css --replace --no-map --use autoprefixer`
   4. `esbuild src/js/main.js --bundle --minify --format=esm --target=es2020 --outfile=dist/js/main.js`
   5. `node scripts/hash-assets.mjs`: hash del contenido en los nombres (ver "Cache-busting").
-- **Imágenes dentro del build** (`scripts/images.mjs`, F10): cada JPG de `src/img` → 480/800/1200 px × AVIF (q50), WebP (q72) y JPEG mozjpeg (q75) en `dist/img`. Las variantes se guardan en `.cache/img` (ignorada por git) y solo se recodifican si el original es más nuevo: build en frío ~11 s, con caché ~0.4 s. No hay binarios generados en el repo; en Railway el build siempre parte en frío.
+- **Imágenes dentro del build** (`scripts/images.mjs`, F10): cada JPG de `src/img` → 480×600, 800×1000 y 1200×1500 (ya en 4:5, la proporción con la que se muestran) × AVIF (q50), WebP (q72) y JPEG mozjpeg (q75) en `dist/img`. Las variantes se guardan en `.cache/img` (ignorada por git) y solo se recodifican si el original es más nuevo: build en frío ~11 s, con caché ~0.4 s. No hay binarios generados en el repo; en Railway el build siempre parte en frío.
 - `npm run dev`: `scripts/dev.mjs` usa la API de esbuild (watch + `serve`), lanza `sass --watch` y vuelve a copiar `index.html` al detectar cambios. Sin dependencias extra (nada de `concurrently` ni `browser-sync`). **Escribe en `.cache/dev/`, nunca en `dist/`** (corregido en F11: un dev server abierto metía en `dist/` un `main.js` sin minificar ni hash). `npm run verify` falla si vuelve a pasar.
 - `browserslist` en `package.json`: `"> 0.5%, last 2 versions, not dead"`, igual que Bootstrap.
 - Script cargado con `<script type="module" src="js/main.js">` (diferido por naturaleza).
 
 ### Rendimiento
 - **Imágenes:** `<picture>` con AVIF → WebP → JPG de respaldo, `srcset`/`sizes`, `width`/`height` explícitos (evita CLS), `loading="lazy"` y `decoding="async"` en todo menos el hero (`fetchpriority="high"`). Dentro de `.ratio`, el hijo absoluto es `<picture>` y la `img` lleva `width/height: 100%` + `object-fit: cover`.
-  - Medido en F10: los JPG originales pesaban 236.7 KB entre las dos fotos; un móvil 375 px 2× descarga ahora 39.2 KB (AVIF 800w, −83 %) y un escritorio 1440 px 2×, 73.5 KB (−69 %).
+  - Medido en F10: los JPG originales pesaban 236.7 KB entre las dos fotos; un móvil 375 px 2× descargaba 39.2 KB (AVIF 800w, −83 %) y un escritorio 1440 px 2×, 73.5 KB (−69 %).
+  - **F11, recorte a 4:5** (aviso "Improve image delivery" de Lighthouse): las variantes eran 2:3 y `object-fit: cover` recortaba arriba y abajo, así que se descargaban píxeles que no se veían. Ahora se generan en 4:5 con el mismo centrado (comparado: la diferencia media es de 1/255 por canal, solo ruido de compresión) y `width`/`height` pasan a 1200×1500. Las 18 variantes bajan de 606.8 a 504.6 KB (−16.8 %): un móvil descarga 34.4 KB (−85 %) y un escritorio 1440 px 2×, 61.0 KB (−74 %).
 - **Fuentes:** locales, solo latin, `preload` de las 2 críticas y `font-display: swap`.
 - **Metas de peso (FINALES):** CSS **≤ 130 KB minificado / ≤ 20 KB gzip** y JS **≤ 15 KB minificado**.
   - **Esta meta no se vuelve a subir.** Si una fase la supera, se detiene el trabajo y se propone qué recortar (utilidades, submódulos, CSS propio) antes de continuar. `npm run size` se ejecuta al cerrar cada fase.

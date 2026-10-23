@@ -25,7 +25,7 @@ Built with **Bootstrap 5.3 customized through Sass** and **vanilla JavaScript**,
 
 **Performance**
 - CSS 122.6 KB minified / **19.3 KB gzip**, compared with 231.8 KB / 30.9 KB for the full Bootstrap build.
-- Responsive images (AVIF, WebP and JPEG at 480/800/1200 px). A phone downloads 39 KB of images instead of 237 KB (−83%).
+- Responsive images (AVIF, WebP and JPEG at 480/800/1200 px, already cropped to their 4:5 display aspect). A phone downloads 34 KB of images instead of 237 KB (−85%).
 - Self-hosted fonts (WOFF2, Latin subset, `font-display: swap`, critical files preloaded). No third-party requests.
 - Content-hashed filenames (e.g. `main.50aa78f3.css`) for safe long-term caching behind a CDN.
 

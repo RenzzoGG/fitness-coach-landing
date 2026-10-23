@@ -8,6 +8,12 @@ import sharp from 'sharp';
 
 export const WIDTHS = [480, 800, 1200];
 
+// Las fotos se muestran siempre en un marco .ratio-4x5 con object-fit: cover.
+// Generarlas ya en 4:5 (480×600, 800×1000, 1200×1500) evita descargar píxeles
+// que se recortan; el centrado es el mismo que hace cover, así que no se nota.
+// Si cambia la proporción en el HTML/CSS, hay que cambiarla aquí.
+export const ASPECT = 5 / 4;
+
 const FORMATS = {
   avif: (img) => img.avif({ quality: 50, effort: 4 }),
   webp: (img) => img.webp({ quality: 72 }),
@@ -27,8 +33,13 @@ export async function buildImages(srcDir, cacheDir, outDir) {
       for (const [ext, encode] of Object.entries(FORMATS)) {
         const output = `${cacheDir}/${name}-${width}.${ext}`;
         if (isFresh(output, source)) continue;
-        // withoutEnlargement: nunca agranda una imagen más pequeña que el ancho pedido.
-        jobs.push(encode(sharp(source).resize({ width, withoutEnlargement: true })).toFile(output));
+        // withoutEnlargement: nunca agranda una imagen más pequeña que el tamaño pedido.
+        const resized = sharp(source).resize(width, Math.round(width * ASPECT), {
+          fit: 'cover',
+          position: 'centre',
+          withoutEnlargement: true,
+        });
+        jobs.push(encode(resized).toFile(output));
       }
     }
   }
