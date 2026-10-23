@@ -373,6 +373,21 @@ fitness-coach-landing/
 - **En dev no se hashea:** `npm run dev` sirve `css/main.css` y `js/main.js` tal cual, desde `.cache/dev/`. `npm run size` y `npm run check` encuentran el archivo con o sin hash (`scripts/dist-files.mjs`).
 - **Headers previstos para F12:** assets con hash → `Cache-Control: public, max-age=31536000, immutable`; `index.html` → `no-cache` (se revalida siempre, porque es el que apunta a los hashes nuevos). Cloudflare respeta los headers del origen. **El HTML nunca debe cachearse largo** (ni con una regla "Cache Everything" sin purgar en cada deploy).
 
+### Auditoría Lighthouse (F11, contra `npm run preview`)
+- **Móvil:** Performance 94 · Accessibility 100 · Best Practices 100 · SEO 100. Escritorio: pendiente (no llegaron los datos).
+- El servidor de preview **no comprime ni envía headers de caché**, así que parte de los avisos son de ese entorno:
+
+| Aviso (móvil) | Causa | Cómo se resuelve |
+|---|---|---|
+| Use efficient cache lifetimes (230 KiB) | Sin `Cache-Control` en preview | F12: `immutable` 1 año en assets con hash; 1 día para favicon, íconos y manifest; `no-cache` en HTML |
+| Render-blocking requests (430 ms) | El CSS bloquea y viaja sin comprimir (122.6 KB, frente a 19.3 KB gzip) | F12: compresión brotli/gzip. Un CSS bloqueante es inevitable; *inline critical CSS* descartado (complejo y frágil) |
+| Document request latency (27 KiB) | HTML sin comprimir (27 KB, frente a 8.4 KB gzip) | F12: compresión |
+| Network dependency tree | Fuentes descubiertas al leer el CSS | F11: precarga de DM Sans 500 (navbar, botones, eyebrow); la compresión acorta la cadena |
+| Improve image delivery (14 KiB) | Variantes 2:3 mostradas en 4:5 | F11: variantes generadas en 4:5 (−16.8 %) |
+| TBT en naranja | CPU del móvil emulado (CSS de 122 KB, estilos y layout, `backdrop-filter`); el JS pesa solo 14 KB | Sin cambios a ciegas: tras el deploy se revisa "Minimize main-thread work" en el JSON |
+
+- **Meta:** ≥ 95 en las 4 categorías, medido **en producción** tras F12 (móvil y escritorio, guardando los JSON en `.cache/`).
+
 ### Deploy (decisión pendiente, fase F12)
 - Railway con el subdominio provisional `pulse.renzzogg.com`. La forma de servir `dist/` (sitio estático de Railpack u otra opción) se decide en F12, con confirmación previa.
 
@@ -393,5 +408,5 @@ Cada fase termina con una verificación concreta y uno o más commits pequeños 
 | **F8 · WhatsApp + Footer** | Botón flotante y footer con el aviso de demo | El enlace abre wa.me con el mensaje prellenado; el botón no tapa el CTA del formulario a 375 px; aviso visible |
 | **F9 · Animaciones de scroll** | `reveal.js` y estilos `.reveal` | Animación al hacer scroll; con "prefers-reduced-motion: reduce" en DevTools no hay movimiento y el contenido se ve; sin JS se ve todo |
 | **F10 · Imágenes, OG y meta** | `images.mjs`, `og.mjs`, `<picture>`, meta tags completos, favicon y manifest | `og-image.png` mide 1200×630 (comprobado con sharp metadata); un validador de OG muestra la vista previa; sin CLS en Lighthouse |
-| **F11 · Auditoría** | `npm run verify` (auditoría estática de `dist/`), enlaces externos, correcciones; Lighthouse lo corre el usuario con `npm run preview` (sin navegador en las sesiones de Claude) | `verify` sin errores; Lighthouse ≥ 95 en las 4 categorías (móvil y escritorio); recorrido con teclado; README del proyecto |
+| **F11 · Auditoría** ✔ | `npm run verify` (html-validate + auditoría propia de `dist/`), enlaces externos y correcciones (CLS del interruptor, landmark de WhatsApp, `dist/` contaminado por dev, `figcaption`, precarga de DM Sans 500, fotos en 4:5); Lighthouse lo corre el usuario con `npm run preview`; README en inglés | `verify` sin errores; Lighthouse móvil en preview: 94 / 100 / 100 / 100. **La meta de ≥ 95 se valida en producción (F12)** |
 | **F12 · Deploy** | Railway + subdominio (**con confirmación previa del usuario**) | El sitio carga en el subdominio con HTTPS; la OG se ve al compartir el enlace |
