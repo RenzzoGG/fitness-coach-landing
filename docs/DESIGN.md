@@ -274,6 +274,8 @@ fitness-coach-landing/
 │   ├── build.mjs        # limpia dist/ y copia HTML, static, fuentes e imágenes optimizadas
 │   ├── dev.mjs          # watch de Sass + esbuild + servidor local (esbuild serve)
 │   ├── images.mjs       # sharp: originales → AVIF/WebP/JPEG en 480/800/1200 (caché en .cache/img)
+│   ├── hash-assets.mjs  # cache-busting: hash del contenido en los nombres
+│   ├── compress.mjs     # precompresión .br/.gz de los archivos de texto
 │   └── og.mjs           # sharp: genera og-image.png de 1200×630
 ├── src/
 │   ├── index.html
@@ -321,6 +323,7 @@ fitness-coach-landing/
   3. `postcss dist/css/main.css --replace --no-map --use autoprefixer`
   4. `esbuild src/js/main.js --bundle --minify --format=esm --target=es2020 --outfile=dist/js/main.js`
   5. `node scripts/hash-assets.mjs`: hash del contenido en los nombres (ver "Cache-busting").
+  6. `node scripts/compress.mjs` (F12): junto a cada archivo de texto (`html`, `css`, `js`, `svg`, `webmanifest`, `txt`) escribe su `.br` (brotli calidad 11) y su `.gz` (gzip nivel 9) con `node:zlib`, sin dependencias. Va al final porque comprime los nombres ya hasheados. Fuentes e imágenes se omiten porque ya vienen comprimidas. Medido: 8 archivos, 186.5 KB → 29.5 KB en brotli (CSS 122.6 KB → 14.6 KB br, frente a 19.3 KB gzip). Caddy los sirve tal cual (ver "Deploy").
 - **Imágenes dentro del build** (`scripts/images.mjs`, F10): cada JPG de `src/img` → 480×600, 800×1000 y 1200×1500 (ya en 4:5, la proporción con la que se muestran) × AVIF (q50), WebP (q72) y JPEG mozjpeg (q75) en `dist/img`. Las variantes se guardan en `.cache/img` (ignorada por git) y solo se recodifican si el original es más nuevo: build en frío ~11 s, con caché ~0.4 s. No hay binarios generados en el repo; en Railway el build siempre parte en frío.
 - `npm run dev`: `scripts/dev.mjs` usa la API de esbuild (watch + `serve`), lanza `sass --watch` y vuelve a copiar `index.html` al detectar cambios. Sin dependencias extra (nada de `concurrently` ni `browser-sync`). **Escribe en `.cache/dev/`, nunca en `dist/`** (corregido en F11: un dev server abierto metía en `dist/` un `main.js` sin minificar ni hash). `npm run verify` falla si vuelve a pasar.
 - `browserslist` en `package.json`: `"> 0.5%, last 2 versions, not dead"`, igual que Bootstrap.
