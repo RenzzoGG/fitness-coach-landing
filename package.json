@@ -14,7 +14,7 @@
     "build": "npm run build:static && npm run build:css && npm run build:js && node scripts/hash-assets.mjs && node scripts/compress.mjs",
     "build:static": "node scripts/build.mjs",
     "build:css": "sass --load-path=node_modules --style=compressed --no-source-map --quiet-deps --silence-deprecation=import src/scss/main.scss dist/css/main.css && postcss dist/css/main.css --replace --no-map --use autoprefixer",
-    "build:js": "esbuild src/js/main.js --bundle --minify --format=esm --target=es2020 --outfile=dist/js/main.js",
+    "build:js": "esbuild src/js/main.js --bundle --minify --format=esm --target=es2022 --outfile=dist/js/main.js",
     "size": "node scripts/size.mjs",
     "check": "node scripts/check-classes.mjs",
     "og": "node scripts/og.mjs",

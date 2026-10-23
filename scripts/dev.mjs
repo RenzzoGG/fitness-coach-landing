@@ -19,7 +19,7 @@ const ctx = await esbuild.context({
   entryPoints: [`${root}src/js/main.js`],
   bundle: true,
   format: 'esm',
-  target: 'es2020',
+  target: 'es2022',
   outfile: `${devDir}/js/main.js`,
   logLevel: 'info',
 });
