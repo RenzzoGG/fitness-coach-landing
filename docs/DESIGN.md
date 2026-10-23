@@ -392,7 +392,18 @@ fitness-coach-landing/
 | Improve image delivery (14 KiB) | Variantes 2:3 mostradas en 4:5 | F11: variantes generadas en 4:5 (−16.8 %) |
 | TBT en naranja | CPU del móvil emulado (CSS de 122 KB, estilos y layout, `backdrop-filter`); el JS pesa solo 14 KB | Sin cambios a ciegas: tras el deploy se revisa "Minimize main-thread work" en el JSON |
 
-- **Meta:** ≥ 95 en las 4 categorías, medido **en producción** tras F12 (móvil y escritorio, guardando los JSON en `.cache/`).
+- **Meta:** ≥ 95 en las 4 categorías, medido **en producción** tras F12 (móvil y escritorio).
+
+### Auditoría Lighthouse en producción (F12, `https://pulse.renzzogg.com`, incógnito)
+- **Móvil: 97 · 100 · 100 · 100. Escritorio: 99 · 100 · 100 · 100.** Meta cumplida. Respecto a preview (94 en móvil), los avisos de compresión y caché de F11 desaparecieron: "Render-blocking" bajó de 430 a 150 ms.
+
+| Aviso (móvil) | Causa | Decisión |
+|---|---|---|
+| 3rd parties | **Cloudflare Web Analytics** con instalación automática: Cloudflare inyecta en el borde, solo para peticiones de navegador, `<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/…">` antes de `</body>`. No está en nuestro HTML ni en el build | **Desactivarlo** (acción del usuario en Cloudflare → Analytics & Logs → Web Analytics → Manage site). Rompe la regla "sin peticiones a terceros" y suma 10 KB de JS; las métricas de tráfico siguen en Cloudflare Analytics sin JS. **Pendiente** al cerrar F12 |
+| Legacy JavaScript (10 KiB) | El beacon (31.8 KB, 10.0 KB gzip) trae polyfills que Lighthouse detecta (`Array.prototype.at`, `findLast`, `includes`, `Object.assign`). Nuestro bundle no tiene helpers ni polyfills | Desaparece con el beacon. Además, esbuild pasa a `es2022` (ver Build) |
+| Use efficient cache lifetimes (4 KiB) | El beacon tiene `max-age=86400`. Nuestros archivos de 1 día (favicon de 173 B y manifest de 184 B) son casi nulos | Desaparece con el beacon |
+| Improve image delivery (14 KiB) | El móvil de Lighthouse (412 px, DPR 1.75) necesita unos 680 px de ancho y se salta de 480w a 800w: el hero (`hero-dumbbell-grip-800`, AVIF de 13.3 KB) y la foto de About (`about-coaching-hands-800`, AVIF de 21.9 KB) sobran alrededor de un 28 % de píxeles | **Sin cambios.** Los móviles reales con DPR 2–3 piden 800w o 1200w de todas formas, y otro tamaño complicaría el build por unos pocos KB |
+| Render-blocking (150 ms), Network dependency tree | CSS bloqueante (14.6 KB en br) y fuentes descubiertas desde el CSS | Aceptado: ya se precargan las fuentes críticas; *inline critical CSS* sigue descartado |
 
 ### Deploy (F12)
 - **Railway + Railpack + Caddy**, con el subdominio `pulse.renzzogg.com` detrás de Cloudflare (proxy activo, SSL **Full**). Cada push a `main` despliega.
@@ -405,7 +416,7 @@ fitness-coach-landing/
   - **Sin fallback a `index.html`:** es una sola página, y una ruta desconocida devuelve un 404 real.
   - Probado en local con el binario oficial de Caddy 2.11.7 (`caddy validate` y `caddy fmt` sin cambios, más curl a cada tipo de archivo).
 - **`railway.json`:** builder `RAILPACK`, `buildCommand: "SITE_URL=https://pulse.renzzogg.com npm run build"` (el dominio queda versionado, no solo en el panel), healthcheck en `/health` y reinicio `ON_FAILURE`. `RAILPACK_SPA_OUTPUT_DIR` no se puede poner ahí: es una variable del servicio en Railway. Node se elige según `engines.node`.
-- **Cloudflare:** SSL/TLS en **Full** (Railway: "Full (Strict) will not work as intended" con proxy), Universal SSL activo, Browser Cache TTL en "Respect existing headers" y **ninguna regla "Cache Everything" sobre el HTML**.
+- **Cloudflare:** Web Analytics automático **debe quedar desactivado** (inyecta un script de terceros; ver "Auditoría Lighthouse en producción"). SSL/TLS en **Full** (Railway: "Full (Strict) will not work as intended" con proxy), Universal SSL activo, Browser Cache TTL en "Respect existing headers" y **ninguna regla "Cache Everything" sobre el HTML**.
 - **Verificado en producción** (curl a `https://pulse.renzzogg.com`, 2026-10-22). Todo coincide con lo esperado:
 
 | Recurso | Codificación | Cache-Control | cf-cache-status |
@@ -440,4 +451,4 @@ Cada fase termina con una verificación concreta y uno o más commits pequeños 
 | **F9 · Animaciones de scroll** | `reveal.js` y estilos `.reveal` | Animación al hacer scroll; con "prefers-reduced-motion: reduce" en DevTools no hay movimiento y el contenido se ve; sin JS se ve todo |
 | **F10 · Imágenes, OG y meta** | `images.mjs`, `og.mjs`, `<picture>`, meta tags completos, favicon y manifest | `og-image.png` mide 1200×630 (comprobado con sharp metadata); un validador de OG muestra la vista previa; sin CLS en Lighthouse |
 | **F11 · Auditoría** ✔ | `npm run verify` (html-validate + auditoría propia de `dist/`), enlaces externos y correcciones (CLS del interruptor, landmark de WhatsApp, `dist/` contaminado por dev, `figcaption`, precarga de DM Sans 500, fotos en 4:5); Lighthouse lo corre el usuario con `npm run preview`; README en inglés | `verify` sin errores; Lighthouse móvil en preview: 94 / 100 / 100 / 100. **La meta de ≥ 95 se valida en producción (F12)** |
-| **F12 · Deploy** | Railway + subdominio (**con confirmación previa del usuario**) | El sitio carga en el subdominio con HTTPS; la OG se ve al compartir el enlace |
+| **F12 · Deploy** ✔ | Railway (Railpack + `Caddyfile`) + `pulse.renzzogg.com` detrás de Cloudflare; brotli/gzip precomprimidos; `Cache-Control` por tipo de archivo; esbuild a `es2022` | HTTPS y redirección 301 desde http; compresión, headers y `cf-cache-status` verificados con curl; `og-image` servida (200, `image/png`); Lighthouse en producción: móvil 97 / 100 / 100 / 100, escritorio 99 / 100 / 100 / 100. Pendiente del usuario: desactivar Cloudflare Web Analytics |
