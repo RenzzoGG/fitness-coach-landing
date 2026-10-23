@@ -1,6 +1,6 @@
 // Sirve dist/ tal cual (el build de producción, con hashes) para probarlo
 // localmente o pasarle Lighthouse. Usa el servidor de esbuild: sin dependencias.
-// No comprime ni pone headers de caché: eso lo harán el servidor y Cloudflare (F12).
+// No comprime ni pone headers de caché: en producción lo hace Caddy (ver Caddyfile).
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 

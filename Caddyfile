@@ -1,0 +1,85 @@
+# Servidor de producción en Railway (F12). Railpack lo usa en lugar de su
+# plantilla porque existe en la raíz (proveedor Node en modo SPA, activado con
+# RAILPACK_SPA_OUTPUT_DIR=dist). Parte de esa plantilla y añade:
+#   - brotli/gzip precomprimidos en el build (scripts/compress.mjs);
+#   - Cache-Control por tipo de archivo (DESIGN.md §8, "Deploy").
+# Railpack lo procesa como plantilla de Go: no escribir dobles llaves.
+
+# Opciones globales: sin API de administración y sin HTTPS propio
+# (el TLS lo terminan Railway y Cloudflare).
+{
+	admin off
+	persist_config off
+	auto_https off
+
+	log {
+		format json
+	}
+
+	servers {
+		trusted_proxies static private_ranges 100.0.0.0/8 # proxy de Railway
+	}
+}
+
+# Railway asigna el puerto en $PORT.
+:{$PORT:80} {
+	log {
+		format json
+	}
+
+	# Healthcheck de Railway (railway.json → deploy.healthcheckPath).
+	respond /health 200
+
+	# Railpack copia dist/ a /app/dist en la imagen final.
+	root * /app/dist
+
+	header {
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Assets con hash en el nombre (main.50aa78f3.css): su contenido nunca cambia,
+	# así que se guardan un año sin revalidar. `file` exige que el archivo exista:
+	# un 404 nunca sale con `immutable` (Cloudflare podría guardarlo un año).
+	@hashed {
+		path_regexp \.[0-9a-f]{8}\.(css|js|woff2|avif|webp|jpg|png)$
+		file
+	}
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+	# Nombre fijo (iOS y el manifest los piden por nombre): 1 día.
+	@daily {
+		path /favicon.svg /apple-touch-icon.png /icon-192.png /icon-512.png /site.webmanifest /robots.txt /fonts/*.txt
+		file
+	}
+	header @daily Cache-Control "public, max-age=86400"
+
+	# El HTML apunta a los hashes nuevos: se revalida en cada visita.
+	@html path / /index.html
+	header @html Cache-Control "no-cache"
+
+	# Go no conoce la extensión .webmanifest y la serviría como text/plain.
+	@manifest path /site.webmanifest
+	header @manifest Content-Type "application/manifest+json"
+
+	# Respaldo para lo que no tenga .br/.gz (encode no toca lo ya comprimido).
+	encode zstd gzip
+
+	# Si el navegador acepta br o gzip, sirve el archivo .br/.gz del build.
+	file_server {
+		precompressed br gzip
+		hide .git .env*
+	}
+
+	# Sin fallback a index.html: es una sola página y una ruta desconocida es un 404 real.
+	# Caddy descarta los headers anteriores al entrar aquí: se repiten.
+	handle_errors {
+		header {
+			Cache-Control "no-store"
+			X-Content-Type-Options "nosniff"
+			-Server
+		}
+		respond "{err.status_code} {err.status_text}"
+	}
+}

@@ -28,6 +28,7 @@ Built with **Bootstrap 5.3 customized through Sass** and **vanilla JavaScript**,
 - Responsive images (AVIF, WebP and JPEG at 480/800/1200 px, already cropped to their 4:5 display aspect). A phone downloads 34 KB of images instead of 237 KB (−85%).
 - Self-hosted fonts (WOFF2, Latin subset, `font-display: swap`, critical files preloaded). No third-party requests.
 - Content-hashed filenames (e.g. `main.50aa78f3.css`) for safe long-term caching behind a CDN.
+- Text assets precompressed with Brotli (quality 11) and gzip at build time: the CSS ships as 14.6 KB over the wire.
 
 **Accessibility**
 - WCAG AA contrast checked for every color pair, visible focus states, a skip link and keyboard-operable menu, accordion, switch and form (Esc closes the mobile menu).
@@ -61,7 +62,7 @@ npm run preview   # serve the production build → http://localhost:4173
 
 | Script | What it does |
 |---|---|
-| `npm run build` | Copies static files and fonts, generates images and icons, compiles and minifies CSS and JS, and adds content hashes |
+| `npm run build` | Copies static files and fonts, generates images and icons, compiles and minifies CSS and JS, adds content hashes and precompresses text files (`.br`, `.gz`) |
 | `npm run verify` | Validates `dist/index.html` and audits the production build |
 | `npm run check` | Fails if an HTML class has no matching CSS rule |
 | `npm run size` | Prints CSS and JS size, minified and gzipped |
@@ -73,6 +74,14 @@ The canonical domain is read from `SITE_URL` (default `https://pulse.renzzogg.co
 SITE_URL=https://example.com npm run build
 ```
 
+## Deployment
+
+Deployed on [Railway](https://railway.com) with Railpack, behind Cloudflare.
+
+- `railway.json` sets the build command (with `SITE_URL`) and a `/health` healthcheck.
+- The service variable `RAILPACK_SPA_OUTPUT_DIR=dist` makes Railpack serve `dist/` with Caddy instead of running a Node server.
+- `Caddyfile` serves the precompressed `.br`/`.gz` files and sets `Cache-Control`: one year and `immutable` for hashed assets, one day for icons and the manifest, and `no-cache` for the HTML.
+
 ## Project structure
 
 ```
@@ -82,7 +91,9 @@ src/
   js/                   main.js + one module per feature
   img/                  source photos
   static/               favicon, OG image, manifest, robots.txt
-scripts/                build, dev server, images, OG image, hashing, checks
+scripts/                build, dev server, images, OG image, hashing, compression, checks
+Caddyfile               production server config (compression, cache headers)
+railway.json            Railway build and deploy settings
 docs/DESIGN.md          design decisions and phase plan (Spanish)
 docs/CREDITS.md         photo and icon credits
 ```

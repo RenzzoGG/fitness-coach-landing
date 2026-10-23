@@ -268,6 +268,8 @@ Botones con `aria-expanded` y `aria-controls`, que gestiona Collapse. El primer 
 fitness-coach-landing/
 ├── CLAUDE.md
 ├── package.json
+├── Caddyfile            # servidor de producción en Railway (compresión y caché, F12)
+├── railway.json         # build en Railway: Railpack + SITE_URL + healthcheck (F12)
 ├── docs/
 │   └── DESIGN.md
 ├── scripts/
@@ -374,7 +376,7 @@ fitness-coach-landing/
 - **Por qué hash en el nombre y no `?v=`:** el nombre cambia solo si cambia el contenido (comprobado: tocar un estilo solo cambia el hash del CSS; dos builds iguales dan los mismos 26 nombres); funciona con cualquier caché, aunque ignore el query string; las versiones vieja y nueva conviven durante el deploy; y permite cachear estos archivos un año.
 - **Sin hash (nombre fijo):** `index.html`, `favicon.svg`, los íconos PNG, `site.webmanifest` y `robots.txt`.
 - **En dev no se hashea:** `npm run dev` sirve `css/main.css` y `js/main.js` tal cual, desde `.cache/dev/`. `npm run size` y `npm run check` encuentran el archivo con o sin hash (`scripts/dist-files.mjs`).
-- **Headers previstos para F12:** assets con hash → `Cache-Control: public, max-age=31536000, immutable`; `index.html` → `no-cache` (se revalida siempre, porque es el que apunta a los hashes nuevos). Cloudflare respeta los headers del origen. **El HTML nunca debe cachearse largo** (ni con una regla "Cache Everything" sin purgar en cada deploy).
+- **Headers (aplicados en F12 en el `Caddyfile`, ver "Deploy"):** assets con hash → `Cache-Control: public, max-age=31536000, immutable`; `index.html` → `no-cache` (se revalida siempre, porque es el que apunta a los hashes nuevos). Cloudflare respeta los headers del origen. **El HTML nunca debe cachearse largo** (ni con una regla "Cache Everything" sin purgar en cada deploy).
 
 ### Auditoría Lighthouse (F11, contra `npm run preview`)
 - **Móvil:** Performance 94 · Accessibility 100 · Best Practices 100 · SEO 100. Escritorio: pendiente (no llegaron los datos).
@@ -391,8 +393,18 @@ fitness-coach-landing/
 
 - **Meta:** ≥ 95 en las 4 categorías, medido **en producción** tras F12 (móvil y escritorio, guardando los JSON en `.cache/`).
 
-### Deploy (decisión pendiente, fase F12)
-- Railway con el subdominio provisional `pulse.renzzogg.com`. La forma de servir `dist/` (sitio estático de Railpack u otra opción) se decide en F12, con confirmación previa.
+### Deploy (F12)
+- **Railway + Railpack + Caddy**, con el subdominio `pulse.renzzogg.com` detrás de Cloudflare (proxy activo, SSL **Full**). Cada push a `main` despliega.
+- **Cómo sirve Railpack `dist/`:** al haber un `package.json`, Railpack usa el proveedor **Node**, que tiene prioridad sobre el de sitios estáticos. No detecta ningún framework (Vite, Astro…), así que sin configuración buscaría `npm start` y el deploy fallaría. La variable de servicio **`RAILPACK_SPA_OUTPUT_DIR=dist`** fuerza su modo de sitio estático: ejecuta el build, copia `dist/` a `/app/dist` y lo sirve con Caddy. A la imagen final solo pasan Caddy, el Caddyfile y `dist/` (nada de `node_modules`).
+  - Descartado: **`Staticfile`** (lo ignora el proveedor Node), **un servidor Node propio** (más código y más memoria para servir archivos estáticos) y **la plantilla de Caddy de Railpack** (comprime solo con gzip/zstd dinámico y no pone `Cache-Control`).
+- **`Caddyfile` propio en la raíz:** Railpack lo usa en lugar de su plantilla (comprobado en el código de Railpack, `core/providers/node/spa.go`). Lo procesa como plantilla de Go, así que no admite dobles llaves. Conserva lo de la plantilla (`$PORT`, `/health`, `trusted_proxies`, `nosniff`, sin `Server`) y añade:
+  - **Compresión:** `file_server { precompressed br gzip }` sirve los `.br`/`.gz` del build (paso 6). El Caddy estándar no tiene codificador brotli, por eso se precomprime. `encode zstd gzip` queda de respaldo. Cloudflare pide al origen `br, gzip` y mantiene la codificación del origen hacia el visitante.
+  - **`Cache-Control`:** assets con hash (`\.[0-9a-f]{8}\.(css|js|woff2|avif|webp|jpg|png)$`) → `public, max-age=31536000, immutable`; favicon, íconos PNG, `site.webmanifest`, `robots.txt` y licencias de fuentes → `public, max-age=86400`; `/` e `/index.html` → `no-cache`. Los matchers de caché llevan `file`, así que un 404 nunca sale con `immutable`; los errores llevan `no-store`.
+  - `site.webmanifest` con `Content-Type: application/manifest+json` (Go no conoce la extensión). `Referrer-Policy: strict-origin-when-cross-origin`.
+  - **Sin fallback a `index.html`:** es una sola página, y una ruta desconocida devuelve un 404 real.
+  - Probado en local con el binario oficial de Caddy 2.11.7 (`caddy validate` y `caddy fmt` sin cambios, más curl a cada tipo de archivo).
+- **`railway.json`:** builder `RAILPACK`, `buildCommand: "SITE_URL=https://pulse.renzzogg.com npm run build"` (el dominio queda versionado, no solo en el panel), healthcheck en `/health` y reinicio `ON_FAILURE`. `RAILPACK_SPA_OUTPUT_DIR` no se puede poner ahí: es una variable del servicio en Railway. Node se elige según `engines.node`.
+- **Cloudflare:** SSL/TLS en **Full** (Railway: "Full (Strict) will not work as intended" con proxy), Universal SSL activo, Browser Cache TTL en "Respect existing headers" y **ninguna regla "Cache Everything" sobre el HTML**.
 
 ## 9. Plan por fases
 
