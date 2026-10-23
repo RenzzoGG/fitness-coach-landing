@@ -35,9 +35,11 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="site.webmanifest">
-  <!-- Precarga solo las 2 fuentes que se ven al cargar la página (títulos y texto) -->
+  <!-- Precarga solo las 3 fuentes visibles al cargar: títulos (Space Grotesk 700), texto (DM Sans 400)
+       y navbar/botones/eyebrow (DM Sans 500). Las demás se descubren al leer el CSS. -->
   <link rel="preload" href="fonts/space-grotesk-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/dm-sans-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/dm-sans-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/main.css">
   <script type="module" src="js/main.js"></script>
 </head>
