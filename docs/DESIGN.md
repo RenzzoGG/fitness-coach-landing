@@ -269,7 +269,6 @@ fitness-coach-landing/
 ├── CLAUDE.md
 ├── package.json
 ├── Caddyfile            # servidor de producción en Railway (compresión y caché, F12)
-├── railway.json         # build en Railway: Railpack + SITE_URL + healthcheck (F12)
 ├── docs/
 │   └── DESIGN.md
 ├── scripts/
@@ -415,7 +414,8 @@ fitness-coach-landing/
   - `site.webmanifest` con `Content-Type: application/manifest+json` (Go no conoce la extensión). `Referrer-Policy: strict-origin-when-cross-origin`.
   - **Sin fallback a `index.html`:** es una sola página, y una ruta desconocida devuelve un 404 real.
   - Probado en local con el binario oficial de Caddy 2.11.7 (`caddy validate` y `caddy fmt` sin cambios, más curl a cada tipo de archivo).
-- **`railway.json`:** builder `RAILPACK`, `buildCommand: "SITE_URL=https://pulse.renzzogg.com npm run build"` (el dominio queda versionado, no solo en el panel), healthcheck en `/health` y reinicio `ON_FAILURE`. `RAILPACK_SPA_OUTPUT_DIR` no se puede poner ahí: es una variable del servicio en Railway. Node se elige según `engines.node`.
+- **Configuración en el panel de Railway** (Service → Settings), no en el repo: builder **Railpack**, Custom Build Command `SITE_URL=https://pulse.renzzogg.com npm run build`, Custom Start Command vacío (lo pone Railpack: Caddy con el `Caddyfile`), Healthcheck Path `/health` y Restart Policy **On Failure**. Junto a la variable de servicio `RAILPACK_SPA_OUTPUT_DIR=dist`. Node se elige según `engines.node`.
+  - **Por qué no `railway.json`:** Railway deja de leer Config as Code (`railway.json`/`railway.toml`) el 2026-12-01. Al migrar (2026-11-16) se copió la configuración al panel y se eliminó el archivo. Consecuencia: el dominio del build ya no queda versionado en el repo, pero `scripts/build.mjs` usa `https://pulse.renzzogg.com` por defecto si falta `SITE_URL`, así que el HTML sale igual.
 - **Cloudflare:** Web Analytics automático **desactivado** (inyectaba un script de terceros; ver "Auditoría Lighthouse en producción"). Verificado el 2026-10-23 sobre el deploy de `b8a9e8c`. Para comprobarlo hay que hacer curl como navegador (`Accept: text/html`, `Sec-Fetch-Dest: document`, User-Agent de Chrome), porque Cloudflare no lo inyecta en un curl simple. SSL/TLS en **Full** (Railway: "Full (Strict) will not work as intended" con proxy), Universal SSL activo, Browser Cache TTL en "Respect existing headers" y **ninguna regla "Cache Everything" sobre el HTML**.
 - **Verificado en producción** (curl a `https://pulse.renzzogg.com`, 2026-10-22). Todo coincide con lo esperado:
 

@@ -78,7 +78,7 @@ SITE_URL=https://example.com npm run build
 
 Deployed on [Railway](https://railway.com) with Railpack, behind Cloudflare.
 
-- `railway.json` sets the build command (with `SITE_URL`) and a `/health` healthcheck.
+- Build and deploy settings live in the Railway dashboard (Railway stops reading `railway.json` on 2026-12-01): builder Railpack, build command `SITE_URL=https://pulse.renzzogg.com npm run build`, healthcheck `/health` and restart policy *On Failure*.
 - The service variable `RAILPACK_SPA_OUTPUT_DIR=dist` makes Railpack serve `dist/` with Caddy instead of running a Node server.
 - `Caddyfile` serves the precompressed `.br`/`.gz` files and sets `Cache-Control`: one year and `immutable` for hashed assets, one day for icons and the manifest, and `no-cache` for the HTML.
 
@@ -93,7 +93,6 @@ src/
   static/               favicon, OG image, manifest, robots.txt
 scripts/                build, dev server, images, OG image, hashing, compression, checks
 Caddyfile               production server config (compression, cache headers)
-railway.json            Railway build and deploy settings
 docs/DESIGN.md          design decisions and phase plan (Spanish)
 docs/CREDITS.md         photo and icon credits
 ```

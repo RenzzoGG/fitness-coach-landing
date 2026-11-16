@@ -27,7 +27,7 @@
 		format json
 	}
 
-	# Healthcheck de Railway (railway.json → deploy.healthcheckPath).
+	# Healthcheck de Railway (panel: Settings → Deploy → Healthcheck Path).
 	respond /health 200
 
 	# Railpack copia dist/ a /app/dist en la imagen final.
