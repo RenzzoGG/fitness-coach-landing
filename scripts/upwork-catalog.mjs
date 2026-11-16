@@ -6,6 +6,7 @@
 //   npm run build
 //   npm i --prefix /ruta/temporal playwright
 //   PLAYWRIGHT_DIR=/ruta/temporal node scripts/upwork-catalog.mjs
+// Solo una imagen, reutilizando las capturas de shots/: añade --only=4-what-you-get
 // Opcional: CHROMIUM_PATH=/ruta/al/chrome para reutilizar un Chromium ya descargado.
 //
 // Las capturas evitan a propósito el footer (nombre y dominio del autor) y cualquier
@@ -20,6 +21,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const dist = join(root, 'dist');
 const out = join(root, 'docs/upwork-catalog');
 const shots = join(out, 'shots');
+const only = process.argv.find((arg) => arg.startsWith('--only='))?.slice('--only='.length);
 
 async function loadPlaywright() {
   try {
@@ -65,28 +67,30 @@ async function scrollToSection(page, id, extra = 0) {
   await page.waitForLoadState('networkidle');
 }
 
-const desktop = await openPage(1440, 900, 2);
-await desktop.screenshot({ path: join(shots, 'desktop-hero.png') });
-// Secciones a 1440 de ancho; el desplazamiento extra salta el padding superior.
-for (const [id, extra] of [['#programs', 40], ['#how', 40], ['#results', 40], ['#book', 40]]) {
-  await scrollToSection(desktop, id, extra);
-  // Recorte al ancho del contenedor: el texto se ve más grande en la composición.
-  await desktop.screenshot({ path: join(shots, `desktop-${id.slice(1)}.png`), clip: { x: 60, y: 0, width: 1320, height: 800 } });
-}
-await desktop.close();
+if (!only) {
+  const desktop = await openPage(1440, 900, 2);
+  await desktop.screenshot({ path: join(shots, 'desktop-hero.png') });
+  // Secciones a 1440 de ancho; el desplazamiento extra salta el padding superior.
+  for (const [id, extra] of [['#programs', 40], ['#how', 40], ['#results', 40], ['#book', 40]]) {
+    await scrollToSection(desktop, id, extra);
+    // Recorte al ancho del contenedor: el texto se ve más grande en la composición.
+    await desktop.screenshot({ path: join(shots, `desktop-${id.slice(1)}.png`), clip: { x: 60, y: 0, width: 1320, height: 800 } });
+  }
+  await desktop.close();
 
-const mobile = await openPage(390, 844, 2);
-await mobile.screenshot({ path: join(shots, 'mobile-hero.png') });
-for (const [id, extra] of [['#programs', 20], ['#faq', 20], ['#book', 20]]) {
-  await scrollToSection(mobile, id, extra);
-  await mobile.screenshot({ path: join(shots, `mobile-${id.slice(1)}.png`) });
+  const mobile = await openPage(390, 844, 2);
+  await mobile.screenshot({ path: join(shots, 'mobile-hero.png') });
+  for (const [id, extra] of [['#programs', 20], ['#faq', 20], ['#book', 20]]) {
+    await scrollToSection(mobile, id, extra);
+    await mobile.screenshot({ path: join(shots, `mobile-${id.slice(1)}.png`) });
+  }
+  // Menú desplegado (Collapse de Bootstrap).
+  await mobile.evaluate(() => window.scrollTo(0, 0));
+  await mobile.click('.navbar-toggler');
+  await mobile.waitForTimeout(500);
+  await mobile.screenshot({ path: join(shots, 'mobile-menu.png') });
+  await mobile.close();
 }
-// Menú desplegado (Collapse de Bootstrap).
-await mobile.evaluate(() => window.scrollTo(0, 0));
-await mobile.click('.navbar-toggler');
-await mobile.waitForTimeout(500);
-await mobile.screenshot({ path: join(shots, 'mobile-menu.png') });
-await mobile.close();
 
 // ---------- 2. Composición ----------
 const img = async (name) => `data:image/png;base64,${(await readFile(join(shots, name))).toString('base64')}`;
@@ -183,7 +187,7 @@ const slides = {
     <div style="position:absolute;top:380px;left:100px;right:100px;display:grid;grid-template-columns:1fr 1fr;gap:36px">
       ${[
         ['M4 5h16v11H4zM8 20h8M12 16v4', 'Responsive design', 'Mobile-first layouts that look sharp on phones, tablets and desktops.'],
-        ['M4 6h16v12H4zM4 7l8 6 8-6', 'Contact form with spam protection', 'Accessible, validated form with a honeypot and server-side checks.'],
+        ['M4 6h16v12H4zM4 7l8 6 8-6', 'Contact form with spam protection', 'Accessible, validated form with Formspree&nbsp;+&nbsp;Cloudflare Turnstile.'],
         ['M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4', 'Basic SEO', 'Semantic HTML, titles, meta descriptions and social preview tags.'],
         ['M13 3 5 14h6l-1 7 8-11h-6z', 'Fast loading', 'Optimized images, local fonts and lean CSS / JS for a quick first view.'],
       ]
@@ -207,6 +211,7 @@ for (const file of ['desktop-programs.png', 'desktop-how.png', 'desktop-results.
 
 const canvas = await browser.newPage({ viewport: { width: 1600, height: 1200 }, deviceScaleFactor: 1 });
 for (const [name, body] of Object.entries(slides)) {
+  if (only && name !== only) continue;
   await canvas.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>${css}</style></head><body>${body}</body></html>`, { waitUntil: 'load' });
   await canvas.evaluate(() => document.fonts.ready);
   await canvas.screenshot({ path: join(out, `${name}.png`) });
