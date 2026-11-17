@@ -142,7 +142,11 @@ Reglas de uso:
 | `$grid-gutter-width` | `2rem` | Más aire entre columnas |
 | `$focus-ring-color` / `$focus-ring-width` | Volt al 50 % / `.25rem` | Foco visible y de marca |
 | `$enable-shadows` | `false` | Usamos bordes de 1px en lugar de sombras: look más técnico |
-| `$enable-negative-margins` | `true` | Para superponer elementos en el hero |
+| `$enable-negative-margins` | `false` (M2; antes `true`) | Ninguna clase `*-n*` en uso: la superposición del hero es CSS propio (`.hero-figure`). Ahorra ~4 KB min |
+| `$gutters` (M2) | solo `0, 3, 4, 5` | Mapa propio de los `.g-*/.gx-*/.gy-*` (por defecto = `$spacers`): 8 valores × 3 ejes × 6 breakpoints |
+| `$grid-row-columns` (M2) | `4` | `.row-cols-*` hasta 4 (por defecto 6) |
+| `$h2-font-size`, `$headings-line-height` (M2) | `3 ×` base, `1.05` | Titulares de sección tipo cartel; RFS los reduce en móvil |
+| `$btn-padding-x-lg`, `$btn-font-size-lg` (M2) | `1.75rem`, `1.1875rem` | "Book your free consultation →" en una línea a 390 px (antes la flecha saltaba de línea) |
 | `$link-decoration` | `none` | Enlaces sin subrayado en la navegación. En el texto corrido se subrayan con una clase propia, para no depender solo del color |
 | `$card-bg`, `$card-border-color`, `$card-spacer-y/x` | graphite, line, más padding | Tarjetas de la marca |
 | `$accordion-*` | fondo graphite, botón activo con texto Volt e ícono personalizado (+/−) | El FAQ no parece el acordeón por defecto |
@@ -151,11 +155,11 @@ Reglas de uso:
 
 ### 5.5 Utility API (`src/scss/_utilities.scss`)
 - Bootstrap genera las utilidades a partir del mapa `$utilities`. Lo modificamos **entre** `@import "bootstrap/scss/utilities"` y `@import "bootstrap/scss/utilities/api"`:
-  - **Añadir** con `map-merge`, por ejemplo una utilidad `ls` (letter-spacing: `.ls-tight`, `.ls-wide`).
+  - **Añadir** con `map-merge`, por ejemplo una utilidad `ls` (letter-spacing: `.ls-tight`, `.ls-wide`) y, desde M2, `text-outline` (`-webkit-text-stroke`: `.text-outline`, `.text-outline-volt`) para el texto decorativo con contorno; el relleno transparente lo pone cada componente.
   - **Quitar** con `map.remove` las familias que no usamos: `align` (vertical-align), `float`, `object-fit`, `shadow`, `translate-middle`, `subtle-border-color`, `border-opacity`, `viewport-width`, `min-viewport-width`, `viewport-height`, `min-viewport-height`, `font-family`, `word-wrap`, `text-opacity`, `link-opacity`, `link-offset`, `link-underline`, `link-underline-opacity`, `bg-opacity`, `subtle-background-color`, `gradient`, `user-select`, `pointer-events`, `rounded-top`, `rounded-end`, `rounded-bottom`, `rounded-start`.
   - **Quitar `.text-secondary`** del valor `color`: pinta con el color de tema `$secondary` (Graphite, 1.15:1 sobre Ink). Para el texto secundario se usa `.text-body-secondary`, que lee `--bs-secondary-color` (Steel en modo oscuro, 7.3:1). Son dos conceptos distintos en Bootstrap 5.3: el *color de tema* `secondary` y el *color de texto secundario del body*.
   - **Estado de validación "valid" eliminado** (`_form-states.scss`, F7): `map.remove($form-validation-states, "valid")` después de `variables`. El formulario solo marca errores, así que no se generan `.is-valid`, `.valid-feedback` ni `.valid-tooltip`. Ahorro medido: 2.4 KB min / 0.1 KB gzip.
-  - **Variantes responsive solo para el layout:** cada familia responsive se repite en los 5 breakpoints (~12 KB por breakpoint). Un `@each` pone `responsive: false` en todas menos `display`, `flex-direction`, `justify-content`, `align-items`, `order`, `text-align`, `margin-x`, `margin-bottom`, `padding-y` y `gap`. Ejemplo: existe `.py-lg-7`, pero no `.mt-md-3`. Si más adelante hace falta otra, se añade a `$responsive-utilities`.
+  - **Variantes responsive solo para el layout:** cada familia responsive se repite en los 5 breakpoints (~12 KB por breakpoint). Un `@each` pone `responsive: false` en todas menos `display`, `flex-direction`, `align-items` y `padding-y` (M2: se quitaron `justify-content`, `order`, `text-align`, `margin-x`, `margin-bottom` y `gap`, sin ninguna variante en uso). Ejemplo: existe `.py-lg-7`, pero no `.mt-md-3`. Si más adelante hace falta otra, se añade a `$responsive-utilities`.
   - Usamos `@use "sass:map"` y `@use "sass:list"` (`map.merge`, `map.remove`, `list.index`): las funciones globales `map-merge`, etc. están obsoletas y darían avisos en nuestro propio código.
 
 ### 5.6 Qué evita el "look de plantilla Bootstrap"

@@ -43,7 +43,7 @@ $component-active-color: $ink;
 // 3. Opciones globales
 // -----------------------------------------------------------------------------
 $enable-shadows:          false; // bordes de 1px en lugar de sombras (look técnico)
-$enable-negative-margins: true;  // .mt-n5 etc. para superponer elementos en el hero
+$enable-negative-margins: false; // M2: ninguna clase *-n* en uso (la superposición del hero es CSS propio); ahorra ~4 KB min
 // $enable-rfs y $enable-dark-mode ya son true por defecto.
 
 // -----------------------------------------------------------------------------
@@ -76,9 +76,9 @@ $line-height-base:       1.6;
 
 $headings-font-family:   "Space Grotesk", $font-family-sans-serif;
 $headings-font-weight:   700;
-$headings-line-height:   1.1;
+$headings-line-height:   1.05;
 $h1-font-size:           $font-size-base * 3;    // RFS lo reduce en móvil
-$h2-font-size:           $font-size-base * 2.25;
+$h2-font-size:           $font-size-base * 3;    // M2: titulares de sección tipo cartel (RFS los reduce en móvil)
 $h3-font-size:           $font-size-base * 1.5;
 
 $display-font-family:    $headings-font-family;
@@ -106,6 +106,16 @@ $spacers: (
   7: $spacer * 6,
 );
 $grid-gutter-width: 2rem;
+// Gutters (.g-*, .gx-*, .gy-*): Bootstrap los genera para cada valor de $gutters
+// (por defecto = $spacers, 8 valores) × 3 ejes × 6 breakpoints. Solo usamos 3, 4 y 5.
+$gutters: (
+  0: 0,
+  3: $spacer,
+  4: $spacer * 1.5,
+  5: $spacer * 3,
+);
+// .row-cols-*: por defecto hasta 6 columnas; la máxima que usamos es 4.
+$grid-row-columns: 4;
 
 // -----------------------------------------------------------------------------
 // 7. Bordes y foco
@@ -126,7 +136,8 @@ $focus-ring-opacity: .5;
 $btn-padding-y:        .875rem;
 $btn-padding-x:        1.75rem;
 $btn-padding-y-lg:     1.125rem;
-$btn-padding-x-lg:     2.25rem;
+$btn-padding-x-lg:     1.75rem;  // M2: con 2.25rem, "Book your free consultation →" se partía a 390px
+$btn-font-size-lg:     1.1875rem; // 19px (por defecto $font-size-lg = 21px)
 $btn-font-weight:      500;
 $btn-border-radius:    50rem;
 $btn-border-radius-sm: 50rem;

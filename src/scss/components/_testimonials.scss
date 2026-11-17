@@ -6,7 +6,7 @@
 
 .testimonial-quote {
   font-family: $headings-font-family;
-  font-size: 1.25rem;
+  font-size: clamp(1.25rem, 1.1rem + .6vw, 1.625rem);
   font-weight: 500;
   line-height: 1.4;
   letter-spacing: -.01em;
@@ -29,4 +29,16 @@
 // mismo padding que el cuerpo, sin el de arriba.
 .testimonial-caption {
   padding: 0 $card-spacer-x $card-spacer-y;
+}
+
+// Desde lg las tres columnas bajan en escalera: rompe la fila de tres tarjetas
+// iguales (el "look de plantilla"). El parallax diferencial se suma en M8.
+@include media-breakpoint-up(lg) {
+  .results-grid > :nth-child(2) {
+    margin-top: 3rem;
+  }
+
+  .results-grid > :nth-child(3) {
+    margin-top: 6rem;
+  }
 }

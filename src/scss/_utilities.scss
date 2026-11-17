@@ -22,6 +22,25 @@ $utilities: map.merge(
   )
 );
 
+// Añadir: texto con contorno → .text-outline (sutil, Chalk al 18 %) y
+// .text-outline-volt. Solo para texto DECORATIVO (aria-hidden): números de
+// sección gigantes, wordmark del footer, números de paso. El relleno
+// transparente lo pone cada componente (color: transparent), porque una
+// utilidad solo puede asignar una propiedad por valor.
+$utilities: map.merge(
+  $utilities,
+  (
+    "text-outline": (
+      property: -webkit-text-stroke,
+      class: text-outline,
+      values: (
+        null: 1px rgba($chalk, .18),
+        volt: 1.5px $volt,
+      ),
+    ),
+  )
+);
+
 // Quitar .text-secondary: pinta con el color de TEMA secondary ($graphite), que
 // sobre Ink es ilegible (1.3:1). El texto secundario es .text-body-secondary,
 // que usa --bs-secondary-color (Steel en modo oscuro, 7.3:1).
@@ -70,17 +89,13 @@ $utilities: map.remove(
 // Variantes responsive (.d-md-flex, .py-lg-7…) solo para familias de layout.
 // Cada familia responsive se repite en los 5 breakpoints (~12 KB por breakpoint);
 // en el resto basta la versión base, mobile first. Recorte medido: ~40 KB min.
+// M2: recortada a las familias con alguna variante en uso (antes también
+// justify-content, order, text-align, margin-x, margin-bottom y gap).
 $responsive-utilities: (
   "display",
   "flex-direction",
-  "justify-content",
   "align-items",
-  "order",
-  "text-align",
-  "margin-x",
-  "margin-bottom",
   "padding-y",
-  "gap",
 );
 
 @each $key, $utility in $utilities {

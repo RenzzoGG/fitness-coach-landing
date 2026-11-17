@@ -217,7 +217,7 @@ Cada fase cierra con: `npm run build`, `check`, `verify`, `size`, capturas Playw
 |---|---|---|
 | **M0** ✔ | Este plan | — |
 | **M1 · Infraestructura** ✔ | Instalar dependencias aprobadas; esbuild con splitting y chunk `motion.js`; adaptar `hash-assets`, `size` y `verify`; cargador condicional (reduced-motion / Motion off / idle); interruptor Motion; scripts `shots` y `lh`; **línea base Lighthouse de `main` en preview** | Con reduced-motion emulado no se pide `motion.*.js` (comprobado en la red de Playwright); bundle crítico ≤ 15 KB |
-| **M2 · Tipografía y layout** | Escala display, `text-outline` (Utility API), números gigantes, composición asimétrica por sección, marquee estático. **Sin movimiento todavía** | Capturas antes/después; 0 scroll horizontal a 320 px; contraste |
+| **M2 · Tipografía y layout** ✔ | Escala display, `text-outline` (Utility API), números gigantes, composición asimétrica por sección, marquee estático. **Sin movimiento todavía** | Capturas antes/después; 0 scroll horizontal a 320 px; contraste |
 | **M3 · Capa global** | Barra de progreso (CSS scroll-driven), navbar ocultable + indicador de sección, cursor, botones magnéticos, rejilla viva | Teclado: navbar visible con foco; cursor ausente en emulación táctil |
 | **M4 · Hero + marquee** | Intro CSS, línea de pulso, parallax de foto y titular, marquee con velocidad de scroll y botón de pausa | **LCP y CLS** en Lighthouse móvil frente a la línea base; decisión sobre máscara inicial del H1 |
 | **M5 · About** | Número 01, revelado de imagen, titular que se lee con scroll (SplitText), iconos dibujados, spotlight | Árbol de accesibilidad del titular partido = texto original |
@@ -265,3 +265,13 @@ Texto original de las decisiones:
 | M1, escritorio | 100 | 100 | 100 | 100 | 421 ms | 0 ms | 0 |
 
   La primera ejecución móvil sale siempre más baja (89 en `main`, 87 en M1): arranque en frío del WSL. Por eso se usa la mediana.
+
+### M2 · Tipografía y layout ✔
+- **Hero:** H1 en tres `.line` fijas con `font-size: clamp(2.5rem, 11.4vw, 10rem)` (no RFS: RFS deja de escalar a 1200 px y aquí el titular debe llenar el container). Copy en `col-lg-6`, foto en `col-xl-5 offset-xl-1` que sube 9 rem desde xl hasta el hueco de "real life.". Línea de pulso SVG a 100vw entre las líneas 1 y 2, medida en `em` del titular (variable `--hero-title-size` compartida), con el pico a ~87 % del ancho, donde la línea 2 deja hueco.
+- **Marquee** (`_marquee.scss`): banda Volt y banda de contorno cruzadas (−2° y 1.5°), `aria-hidden`, separador en rombo dibujado con CSS (un ✦ dependería de la fuente). `overflow: clip` recorta las bandas giradas sin crear scroll.
+- **Números de sección** 01–06 (`.section-index` + `.text-outline`), detrás del contenido con `z-index: -1` dentro de `.section { isolation: isolate; overflow-x: clip }`. `clip` y no `hidden`: `hidden` rompería el sticky del FAQ y el pin de M7.
+- **Composición:** About en `col-lg-4` + `col-lg-7 offset-lg-1`; tarjeta destacada con `margin-block: -1rem` en lg (margen y no transform, que será de GSAP); testimonios en escalera (0 / 3 / 6 rem); título del FAQ sticky en lg (`top: 7rem`; `.sticky-lg-top` usaría `top: 0` y quedaría bajo el navbar); "20 minutes, no pressure." a `clamp(2.75rem, …, 4.5rem)`; números de paso con contorno Volt; wordmark "PULSE THEORY" a todo el ancho en el footer.
+- **Recorte de CSS para hacer sitio** (medido): `$enable-negative-margins: false`, `$gutters` a 0/3/4/5, `$grid-row-columns: 4` y `$responsive-utilities` reducida a 4 familias → **−14.2 KB min / −1.7 KB gzip**. Hallazgo de paso: `pt-lg-6`/`pb-lg-7` no existían (padding-top/bottom no son responsive); se volvió a `py-6 py-lg-7`.
+- **Bug de `main` corregido:** la flecha de "Book your free consultation →" saltaba de línea a 390 px; ahora `$btn-padding-x-lg: 1.75rem` y `$btn-font-size-lg: 1.1875rem`.
+- **Pesos:** CSS 112.5 KB / 18.4 KB gzip (antes de M2: 123.9 / 19.5) · crítico 15.0 KB · movimiento 47.8 KB gzip.
+- **Lighthouse (mediana de 5):** móvil 100 · 100 · 100 · 100 (LCP 912 ms, TBT 63 ms, CLS 0); escritorio 100 · 100 · 100 · 100. Una primera tanda de 3 dio 93 en móvil (84 en una ejecución) sin cambios de JS respecto a M1: ruido del WSL, por eso `npm run lh` pasa a 5 ejecuciones. Los JSON muestran una tarea de ~170 ms hacia 1.2 s, que es la evaluación del chunk de GSAP: hay que vigilarla.

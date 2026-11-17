@@ -26,9 +26,9 @@
   display: block;
   margin-bottom: map.get($spacers, 3);
   font-family: $headings-font-family;
-  font-size: 2.5rem;
+  font-size: clamp(4rem, 7vw, 6.5rem);
   font-weight: 700;
-  line-height: 1;
-  color: $volt;
-  letter-spacing: -.04em;
+  line-height: .85;
+  color: transparent; // contorno Volt con .text-outline-volt (Utility API)
+  letter-spacing: -.05em;
 }

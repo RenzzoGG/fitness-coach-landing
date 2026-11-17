@@ -62,8 +62,32 @@ h1, h2, h3, h4,
 }
 
 // Secciones: una línea fina las separa (el espaciado vertical lo dan .py-6/.py-lg-7).
+// - overflow-x: clip recorta lo que sangra a los lados (números gigantes, wordmark)
+//   sin crear un contenedor de scroll: hidden rompería position: sticky (FAQ) y el pin (M7).
+// - isolation: isolate crea un contexto de apilamiento propio, para que el número
+//   gigante (z-index: -1) quede detrás del contenido pero dentro de la sección.
 .section {
+  position: relative;
+  isolation: isolate;
+  overflow-x: clip;
   border-top: 1px solid $line;
+}
+
+// Número de sección gigante con contorno (01–06), detrás del titular.
+// Decorativo: el número accesible es el .eyebrow-number del eyebrow.
+.section-index {
+  position: absolute;
+  top: -.06em;
+  right: 0;
+  z-index: -1;
+  font-family: $headings-font-family;
+  font-size: clamp(7rem, 26vw, 22rem);
+  font-weight: 700;
+  line-height: .8;
+  color: transparent;
+  letter-spacing: -.06em;
+  pointer-events: none;
+  user-select: none;
 }
 
 // Etiqueta pequeña sobre los títulos de sección: "01 — Meet your coach".

@@ -1,7 +1,7 @@
 // Lighthouse móvil y escritorio contra dist/, servido como en producción
 // (static-server.mjs: brotli + Cache-Control de Caddy).
 // Uso: npm run lh [-- etiqueta]   → .cache/lighthouse/<etiqueta>/
-// Performance varía entre ejecuciones (CPU del WSL), así que se corre 3 veces
+// Performance varía entre ejecuciones (CPU del WSL), así que se corre 5 veces
 // por dispositivo y se informa la mediana; el resto de categorías no varía.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +13,7 @@ import { serve } from './static-server.mjs';
 const root = fileURLToPath(new URL('..', import.meta.url));
 const label = process.argv[2] ?? 'latest';
 const out = `${root}.cache/lighthouse/${label}`;
-const RUNS = Number(process.env.LH_RUNS) || 3;
+const RUNS = Number(process.env.LH_RUNS) || 5;
 mkdirSync(out, { recursive: true });
 
 const server = await serve(`${root}dist`);
@@ -29,6 +29,7 @@ try {
     for (let i = 1; i <= RUNS; i++) {
       const { lhr, report } = await lighthouse(`${server.url}/`, { port, output: 'html', logLevel: 'error' }, config);
       writeFileSync(`${out}/${device}-${i}.html`, report);
+      writeFileSync(`${out}/${device}-${i}.json`, JSON.stringify(lhr));
       const score = (id) => Math.round(lhr.categories[id].score * 100);
       const metric = (id) => lhr.audits[id].numericValue;
       runs.push({

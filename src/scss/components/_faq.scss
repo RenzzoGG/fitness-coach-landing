@@ -1,0 +1,15 @@
+// =============================================================================
+// FAQ
+// El acordeón sale entero de las variables $accordion-* (_variables.scss).
+// =============================================================================
+
+// Desde lg, el título acompaña al lector mientras recorre las preguntas.
+// Solo CSS: position: sticky dentro de la columna, que mide lo mismo que el
+// acordeón. top deja libre el navbar sticky (≈ 4.5rem de alto).
+// (.sticky-lg-top de Bootstrap fija top: 0 y quedaría debajo del navbar.)
+@include media-breakpoint-up(lg) {
+  .faq-intro {
+    position: sticky;
+    top: 7rem;
+  }
+}

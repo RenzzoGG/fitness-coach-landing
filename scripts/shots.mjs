@@ -80,7 +80,8 @@ async function sectionShots(page, device) {
     const exists = await page.evaluate((sid) => {
       const el = document.getElementById(sid) ?? document.querySelector(`.${sid}`);
       if (!el) return false;
-      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY, behavior: 'instant' });
+      const header = document.querySelector('.site-header')?.offsetHeight ?? 0; // el navbar sticky tapa lo de arriba
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - header, behavior: 'instant' });
       return true;
     }, id);
     if (!exists) continue;

@@ -8,8 +8,74 @@
   overflow: hidden;
 }
 
+// Titular tipo cartel: el tamaño sale del ancho de la ventana (clamp) y no de
+// RFS, porque RFS deja de escalar a partir de 1200px y aquí queremos que la
+// línea más larga ("Train with intent.") ocupe casi todo el container.
+// Cada .line es un bloque: los cortes son fijos en todos los tamaños.
+// Titular tipo cartel: el tamaño sale del ancho de la ventana (clamp) y no de
+// RFS, porque RFS deja de escalar a partir de 1200px y aquí queremos que la
+// línea más larga ("Train with intent.") ocupe casi todo el container.
+// Cada .line es un bloque: los cortes son fijos en todos los tamaños.
+// La variable la comparte .hero-pulse para medirse en "líneas del titular".
+.hero-headline {
+  --hero-title-size: clamp(2.5rem, 11.4vw, 10rem);
+  position: relative;
+  isolation: isolate; // la línea de pulso (z-index: -1) queda detrás del texto
+}
+
+.hero-title {
+  font-size: var(--hero-title-size);
+  line-height: .92;
+  letter-spacing: -.055em;
+
+  .line {
+    display: block;
+    // Un poco de aire abajo para que la máscara de la intro (M4) no corte los descendentes.
+    padding-bottom: .04em;
+  }
+}
+
 .hero-title-accent {
   color: $volt;
+}
+
+// Línea de pulso a todo el ancho de la ventana (100vw centrado sobre el
+// container; .hero recorta lo que sobra), entre la 1.ª y 2.ª línea del titular.
+// Medidas en em del tamaño del titular: sigue al texto en cualquier pantalla.
+// vector-effect: el trazo mantiene su grosor aunque el SVG se estire.
+.hero-pulse {
+  position: absolute;
+  top: .66em;
+  left: 50%;
+  z-index: -1;
+  width: 100vw;
+  height: 1.3em;
+  overflow: visible;
+  font-size: var(--hero-title-size);
+  pointer-events: none;
+  transform: translateX(-50%);
+
+  path {
+    fill: none;
+    stroke: $volt;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: .5;
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+.hero-copy {
+  padding-top: map.get($spacers, 4);
+}
+
+// Desde xl la foto sube hasta el hueco que deja la última línea ("real life."
+// es la más corta), así el titular y la foto se tocan sin taparse.
+@include media-breakpoint-up(xl) {
+  .hero-figure {
+    margin-top: -9rem;
+  }
 }
 
 // Datos del servicio bajo los CTA: separados por una línea fina, no son estadísticas.

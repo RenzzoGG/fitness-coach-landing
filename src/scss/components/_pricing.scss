@@ -47,6 +47,13 @@
 // redefinir la propiedad border.
 .pricing-card-featured {
   --#{$prefix}card-border-color: #{$volt};
+
+  // Desde lg sobresale 1rem por arriba y por abajo: la tarjeta destacada se lee
+  // como el centro de la composición. Margen negativo y no transform, porque
+  // transform lo usará GSAP en M6.
+  @include media-breakpoint-up(lg) {
+    margin-block: -1rem;
+  }
 }
 
 .pricing-badge {

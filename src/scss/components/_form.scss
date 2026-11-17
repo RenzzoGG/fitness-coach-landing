@@ -13,3 +13,10 @@
   border: 1px solid $volt;
   border-radius: $border-radius;
 }
+
+// "20 minutes, no pressure." como cartel: el último empujón antes del formulario.
+.book-title {
+  font-size: clamp(2.75rem, 2rem + 4vw, 4.5rem);
+  line-height: .95;
+  letter-spacing: -.05em;
+}

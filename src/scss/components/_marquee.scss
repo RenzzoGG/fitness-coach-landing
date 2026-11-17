@@ -1,0 +1,66 @@
+// =============================================================================
+// Marquee: dos bandas inclinadas entre Hero y About (decorativas, aria-hidden)
+// En M2 son estáticas; el desplazamiento infinito llega en M4.
+// =============================================================================
+
+// overflow: clip recorta las bandas giradas (que sobresalen por los lados) sin
+// crear un contenedor de scroll. hidden queda como respaldo para navegadores viejos.
+.marquee {
+  padding-block: 2.5rem;
+  overflow: hidden;
+  overflow: clip;
+}
+
+.marquee-band {
+  position: relative;
+  z-index: 1; // la banda Volt cruza POR ENCIMA de la de contorno
+  margin-inline: -1rem;
+  color: $ink; // 15:1 sobre Volt
+  background-color: $volt;
+  transform: rotate(-2deg);
+}
+
+// Segunda banda: solo contorno, girada al revés, cruzando la primera.
+.marquee-band-outline {
+  z-index: 0;
+  margin-top: .25rem;
+  color: transparent;
+  background-color: $ink;
+  border-block: 1px solid $line;
+  transform: rotate(1.5deg);
+  -webkit-text-stroke: 1px $steel;
+
+  // Con letra grande las bandas se cruzan; en móvil, con letra pequeña, se taparían.
+  @include media-breakpoint-up(md) {
+    margin-top: -.75rem;
+  }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  padding-block: .625rem;
+  font-family: $headings-font-family;
+  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: -.02em;
+  white-space: nowrap;
+
+  // Separador: un rombo dibujado con CSS (un carácter como ✦ dependería de la fuente).
+  span::after {
+    display: inline-block;
+    width: .32em;
+    height: .32em;
+    margin-inline: .7em;
+    vertical-align: .2em;
+    content: "";
+    background-color: currentColor;
+    transform: rotate(45deg);
+  }
+
+  .marquee-band-outline & span::after {
+    background-color: $volt;
+  }
+}
