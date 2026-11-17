@@ -1,0 +1,238 @@
+# Pulse Theory: plan de rediseño con movimiento (rama `motion-redesign`)
+
+> Objetivo: convertir la landing en una pieza de portafolio para trabajos de animación (GSAP, scroll storytelling, interacciones lúdicas) **sin perder** lo que ya tiene: rendimiento, accesibilidad, honestidad de marca y Bootstrap desde Sass.
+> Se mantiene todo el copy y todas las secciones. Cambian composición, tipografía, layout y movimiento.
+> Documentación en español; el contenido visible del sitio sigue en inglés.
+
+---
+
+## 0. Punto de partida (medido el 2026-11-17 en `main`, commit `4c8351c`)
+
+| Métrica | Valor | Meta actual (CLAUDE.md) |
+|---|---|---|
+| CSS | 122.6 KB min · 19.3 KB gzip | ≤ 130 KB min · ≤ 20 KB gzip |
+| JS | 14.2 KB min · 5.4 KB gzip | ≤ 15 KB min |
+| Lighthouse producción | Móvil 97 · 100 · 100 · 100 / Escritorio 99 · 100 · 100 · 100 | Móvil ≥ 95 |
+| Movimiento actual | `reveal.js` (IntersectionObserver + transición CSS), cambio de precio con keyframes, flecha de botones, punto que late | — |
+
+Peso real de las librerías candidatas (medido sobre los tarballs de npm, `dist/*.min.js`, gzip -9):
+
+| Paquete | Min | Gzip |
+|---|---|---|
+| `gsap` 3.15.1 (core) | 71.6 KB | 27.7 KB |
+| `gsap/ScrollTrigger` | 43.6 KB | 17.6 KB |
+| `gsap/SplitText` | 7.8 KB | 3.6 KB |
+| **Subtotal GSAP** | **123.0 KB** | **48.9 KB** |
+| `lenis` 1.3.27 | 18.4 KB | 5.3 KB |
+
+**Conclusión:** solo el core de GSAP ya multiplica por 5 la meta de JS. Esto no se puede resolver recortando; requiere **cambiar cómo se define la meta** (ver §5.2). Es la decisión principal que necesito de ti antes de la fase M1.
+
+---
+
+## 1. Concepto visual: "Signal" (la señal)
+
+### La idea
+La marca se llama *Pulse Theory* y su logotipo ya es una **línea de pulso** (`M3 17h6l3-7 5 13 3-6h9`). El concepto convierte esa línea en el hilo conductor de toda la página: **el scroll es una sesión de entrenamiento leída como telemetría**. La línea de pulso nace en el hero, se dibuja mientras bajas, conecta los pasos de *How it works*, late al elegir un plan y termina "en reposo" en el footer.
+
+El estilo actual ("laboratorio de rendimiento": rejilla técnica, Volt, grotesca enorme) se mantiene, pero se lleva al extremo:
+
+- **De laboratorio a osciloscopio.** La rejilla de fondo deja de ser decoración estática: reacciona al cursor (se ilumina cerca de él) y al scroll (se desplaza en paralaje lento). Es la pantalla sobre la que se dibuja la señal.
+- **Tipografía como imagen.** Space Grotesk a tamaños de cartel (el H1 llega a ~9–11 vw en escritorio), con interlineado apretado (0.9) y tracking negativo. Se añade un segundo registro: **texto con contorno** (`-webkit-text-stroke` en Volt o Steel, relleno transparente) para números de sección gigantes, el marquee y el wordmark del footer. Regla: el contorno es **solo decorativo** (`aria-hidden`); ningún texto que haya que leer depende de él.
+- **Números como protagonistas.** Los índices `01–05` de cada sección se vuelven elementos de composición enormes (como dorsales o marcadores de un cronómetro), anclados al borde de la rejilla.
+- **Composición editorial, no de plantilla.** Se rompe la simetría de columnas Bootstrap: titulares que se salen del `container` hacia el borde, imágenes que cruzan la línea de la rejilla, bloques de texto desplazados (`offset-*`), mucho aire. El grid de Bootstrap sigue siendo la base (`row`/`col-*`/`offset-*`/`g-*`), pero se usa para romper la retícula de forma controlada, no para repartir en tercios iguales.
+- **Ritmo de entrenamiento.** El movimiento tiene dos tempos, como una serie: **esfuerzo** (entradas rápidas y secas, `power4.out`, 0.6–0.9 s) y **descanso** (scrub suave ligado al scroll, sin easing propio). Nada rebota ni es "cartoon": la marca es directa y técnica.
+- **Paleta intacta.** Ink, Graphite, Line, Rule, Chalk, Steel y Volt (DESIGN.md §3). Volt sigue siendo el único acento y nunca lleva texto blanco encima. No se añaden colores; se añade **luz** (gradientes radiales de Volt a muy baja opacidad que siguen al cursor).
+
+### Por qué funciona como portafolio
+Cada técnica que un cliente busca en un perfil "animation-heavy" aparece **una vez y con motivo** (split text, pin, scroll horizontal, scrub, parallax, marquee, contadores, cursor, magnetismo, SVG draw), y todas están unidas por un concepto. Un muestrario de efectos sin hilo se ve amateur; una página con una idea se ve dirigida.
+
+---
+
+## 2. Sección por sección
+
+Convención: **[CSS]** = sin JS, se ve desde el primer pintado. **[GSAP]** = llega con el chunk de movimiento (§5.2). **[lg+]** = solo escritorio (`ScrollTrigger.matchMedia` / `gsap.matchMedia`). Todo lo marcado [GSAP] **no existe** con `prefers-reduced-motion: reduce` (§6).
+
+### 2.0 Global
+
+| Elemento | Qué hace | Cómo |
+|---|---|---|
+| **Barra de progreso de scroll** | Línea Volt de 2 px bajo el navbar que crece con el scroll | **[CSS]** `animation-timeline: scroll()` (scroll-driven animations nativas, cero JS). En navegadores sin soporte (`@supports not (animation-timeline: scroll())`) no se muestra. Es la opción más ligera y una buena lección: no todo necesita GSAP |
+| **Navbar inteligente** | Se oculta al bajar y reaparece al subir; un indicador Volt se desliza bajo el enlace de la sección activa | **[GSAP]** `ScrollTrigger.create({ onUpdate })` con la dirección del scroll + un trigger por sección. Nunca se oculta si tiene foco dentro (`:focus-within`) ni con el menú móvil abierto |
+| **Cursor personalizado** | Un anillo que sigue al cursor con inercia; crece y muestra una etiqueta ("Book", "Drag", "Open") sobre elementos interactivos | **[GSAP]** `gsap.quickTo()` (la forma recomendada para seguir el ratón sin crear un tween por evento). Solo con `(hover: hover) and (pointer: fine)`. **El cursor nativo se mantiene visible**: el anillo complementa, no sustituye (ocultar el cursor del sistema perjudica a personas con baja visión) |
+| **Botones magnéticos** | Los CTA principales se desplazan unos píxeles hacia el cursor y vuelven con elasticidad suave | **[GSAP]** `quickTo` sobre `x`/`y`, solo `pointer: fine`. El anillo de foco se mueve con el botón, no queda desfasado |
+| **Rejilla viva** | La rejilla del fondo se ilumina alrededor del cursor | **[CSS + 10 líneas JS]** variables `--mx`/`--my` en un `radial-gradient` de la máscara; el JS solo escribe dos variables en `pointermove` con `requestAnimationFrame` |
+| **Interruptor "Motion"** | Botón en el navbar ("Motion: on/off") que pausa todo el movimiento no esencial y lo recuerda | **[JS crítico]** añade `data-motion="off"` a `<html>`; el chunk de movimiento hace `gsap.globalTimeline.pause()` y `ScrollTrigger.getAll().forEach(t => t.disable())`, y el CSS detiene el marquee. Cumple WCAG 2.2.2 (Pause, Stop, Hide) aunque el sistema no tenga activado reduced-motion |
+| **Loader / intro** | Ver §2.1: **no hay pantalla de carga a pantalla completa** | Justificación abajo |
+
+**Sobre el page loader (propuesta descartada en su forma clásica):** un loader que tapa la página retrasa el LCP y castiga Lighthouse en móvil, y en una landing de una sola página no hay nada que "cargar" que justifique la espera. En su lugar, el hero **es** la intro: una secuencia de arranque de ~1 s hecha en CSS que se ejecuta mientras la página ya es usable (§2.1). Si tras medir en M4 quieres además un loader, lo hago como capa de primera visita (`sessionStorage`) y te enseño el coste en Lighthouse antes de dejarlo.
+
+### 2.1 Hero (`#top`)
+
+- **Secuencia de arranque [CSS]:** la línea de pulso del logo se dibuja a lo ancho de la pantalla (`stroke-dashoffset`), las líneas del H1 suben desde una máscara (`overflow: hidden` + `translateY(100%)`, escalonadas 80 ms), la foto se revela con `clip-path: inset()` de abajo arriba y los tres datos (`12-week`, `Weekly`, `Anywhere`) aparecen al final. Es CSS para que arranque **en el primer pintado**, sin esperar al chunk de GSAP. Las líneas del H1 se marcan a mano en el HTML (`<span class="line">`), porque SplitText llegaría tarde y provocaría un parpadeo.
+- **Composición:** H1 a sangre por la izquierda ocupando ~2/3 del ancho en escritorio; la foto a la derecha, más estrecha y desplazada hacia abajo para que el titular la monte por encima (`z-index` + `mt-n*`, que ya tenemos con `$enable-negative-margins`). El `hero-tag` "Weekly check-in" se convierte en una etiqueta tipo monitor con la línea de pulso en miniatura animada.
+- **Scroll [GSAP, scrub]:** al bajar, la foto hace parallax lento (`yPercent`) y escala un 6 %; las líneas del H1 se separan a velocidades distintas; la rejilla se desplaza al 30 % de la velocidad.
+- **CTA:** "Book your free consultation" magnético; la flecha `→` actual se conserva.
+- **LCP:** la imagen del hero sigue siendo `fetchpriority="high"` sin lazy. Mediré en M4 si el `clip-path` inicial del H1/foto retrasa el LCP; si lo hace, la foto entra solo con `scale`/`opacity` ≥ 0.01 y el texto se queda sin máscara inicial. **Lo mido, no lo supongo.**
+
+### 2.2 Marquee (nuevo separador entre Hero y About)
+
+- Banda Volt con texto Ink, inclinada −2°, con frases que **ya existen en el sitio**: "Train with intent ✦ 12-week training blocks ✦ Weekly 1:1 check-ins ✦ Home or gym ✦". Encima, una segunda banda con contorno en sentido contrario.
+- **[CSS]** bucle infinito con `@keyframes` sobre `translateX` (contenido duplicado `aria-hidden` para el bucle sin cortes). **[GSAP]** la velocidad y la dirección responden a la velocidad del scroll (`ScrollTrigger` `getVelocity()` → `timeScale` del tween).
+- **Accesibilidad:** toda la banda es `aria-hidden="true"` (el contenido está repetido en el hero); botón de pausa visible y enfocable junto a ella; se detiene con el interruptor Motion y no existe con reduced-motion (queda estática).
+
+### 2.3 About (`#about`, "01 Meet your coach")
+
+- **Número de sección gigante** "01" con contorno, detrás del titular, que sube con parallax.
+- **Revelado de imagen [GSAP, scrub]:** la foto de las manos se descubre con `clip-path` mientras la imagen interior hace contra-parallax (efecto "ventana").
+- **Titular que se "lee solo" [GSAP + SplitText, scrub]:** "Hi, I'm Mateo. I coach strength for people with real schedules." partido en palabras que pasan de Steel a Chalk según avanzas. Es el efecto de *scroll storytelling* más reconocible y aquí tiene sentido: es la presentación del coach.
+- **Credenciales:** los tres badges entran con un escalonado corto, como fichas que se colocan.
+- **Tarjetas de valores:** el icono SVG se dibuja (`stroke-dashoffset`) al entrar; el borde superior de cada tarjeta se ilumina en Volt de izquierda a derecha; en `pointer: fine`, un *spotlight* radial sigue al cursor dentro de la tarjeta (variable CSS, sin tilt 3D: el tilt suele marear).
+
+### 2.4 Programs (`#programs`, "02")
+
+- **Entrada tipo "reparto de cartas" [GSAP]:** las tres tarjetas llegan apiladas desde abajo y se abren a su posición con una ligera rotación que se corrige al asentarse. Featured (Performance) llega la última y queda por delante.
+- **Contador de precios [GSAP]:** al cambiar Monthly/Annual, el número cuenta de un valor al otro ($79 → $63) con dígitos que ruedan. Son **precios reales del sitio**, no cifras inventadas. Sin JS de movimiento, sigue funcionando el cambio actual con keyframes CSS (mejora progresiva intacta: los dos precios siguen en el HTML).
+- **Switch:** la píldora "Save 20%" hace un pulso corto al activarse Annual.
+- **Tarjeta destacada:** borde Volt con un brillo que recorre el perímetro (gradiente cónico animado en CSS, `@property` para animar el ángulo) y spotlight del cursor.
+- **Al elegir plan:** el CTA `data-plan` dispara un pulso de la línea de señal que "viaja" hacia el formulario mientras se hace scroll a `#book`.
+
+**Sobre el "horizontal-scroll programs" que mencionas:** con solo 3 planes, un scroll horizontal fijado obliga a desplazarse para comparar precios, que es justo lo que una tabla de precios no debe hacer. Propongo usar el scroll horizontal en *How it works* (4 pasos secuenciales, donde sí cuenta una historia) y dejar Programs comparables de un vistazo. Si prefieres el horizontal aquí, se puede: dímelo.
+
+### 2.5 How it works (`#how`, "03"): la pieza central
+
+- **[lg+] Sección fijada con scroll horizontal [GSAP, `pin` + scrub]:** al llegar, la sección se queda fija y los 4 pasos avanzan en horizontal como paneles anchos. Cada panel tiene su número gigante (01–04) con contorno que **se rellena de Volt** cuando el panel está centrado. La **línea de pulso** recorre los cuatro paneles y se dibuja con el progreso: es el clímax visual del concepto. Se usa `containerAnimation` de ScrollTrigger para que los elementos internos de cada panel animen según el avance horizontal.
+- **[< lg] Línea de tiempo vertical:** sin pin (en móvil el pin sufre con la barra de direcciones que aparece y desaparece). Una línea vertical se dibuja con el scroll y cada paso se "enciende" al cruzarla.
+- **Accesibilidad:** el DOM sigue siendo la `<ol>` actual en orden; el pin es solo presentación. El CTA "Start with step one" queda después de la sección fijada.
+
+### 2.6 Results (`#results`, "04")
+
+- **Citas como tipografía:** cada testimonio se compone grande (estilo cita de revista), con las comillas como glifo gigante en Volt.
+- **[GSAP]** las citas entran palabra a palabra (SplitText, `once`, no scrub: se leen mejor si se completan solas) y las tarjetas tienen un parallax diferencial ligero (columna central más lenta) en lg+.
+- **Honestidad intocable:** el badge **"Sample testimonial"** y la nota aclaratoria no se animan nunca para ocultarse: están visibles desde el primer frame de la tarjeta. Las iniciales (avatares) siguen sin fotos de personas reales.
+
+### 2.7 FAQ (`#faq`, "05")
+
+- El bloque de título se vuelve **sticky** en lg+ mientras se recorre el acordeón (**[CSS]** `position: sticky`, sin JS).
+- El icono +/− hace un *morph* (la barra vertical rota y se colapsa) con transición CSS. La apertura sigue siendo el Collapse de Bootstrap (que ya anima la altura con `.collapsing`): no se duplica con GSAP.
+- Entrada con escalonado corto de las preguntas.
+
+### 2.8 Book (`#book`)
+
+- Titular "20 minutes, no pressure." a gran escala con revelado por líneas.
+- **Formulario [CSS]:** la línea inferior de cada campo se dibuja en Volt al enfocar (además del anillo de foco, no en su lugar).
+- **Envío correcto [GSAP]:** el estado de éxito dibuja la línea de pulso que termina en un check. El texto "Demo form — no data is sent anywhere" se mantiene visible y sin animar.
+- Botón de envío magnético.
+
+### 2.9 Footer y WhatsApp
+
+- **Wordmark gigante** "PULSE THEORY" a todo el ancho con contorno, que se rellena de Chalk al llegar al final de la página (scrub). Decorativo (`aria-hidden`); la marca real sigue en texto.
+- La línea de pulso termina aquí, plana: "en reposo". El aviso de marca ficticia no se toca.
+- **WhatsApp:** entra después de pasar el hero (para no competir con los CTA) con un pequeño pulso; con reduced-motion aparece sin animación.
+
+---
+
+## 3. Tipografía y layout (sin movimiento)
+
+- **Escala de display:** se amplían `$display-font-sizes` de Bootstrap (variable existente, genera `.display-1…6` con RFS) en lugar de crear clases nuevas; para el H1 del hero y el wordmark, que necesitan escalar con el viewport más allá de lo que hace RFS, se usa `clamp()` en `components/_hero.scss` y `_footer.scss`.
+- **Texto con contorno:** una utilidad nueva `text-outline` (y `text-outline-volt`) **mediante la Utility API** en `_utilities.scss`, como manda CLAUDE.md.
+- **Números de sección:** se reutiliza `.eyebrow-number` como índice pequeño (accesible) y se añade un número gigante decorativo `aria-hidden`.
+- **Grid:** `offset-*`, `order-*` y márgenes negativos de Bootstrap para la composición asimétrica. Comprobación de **cero scroll horizontal a 320 px** en cada fase (las bandas inclinadas y los titulares a sangre son el riesgo: se recortan con `overflow-x: clip` en su sección, no en `body`, porque `overflow: hidden` en `body` rompe `position: sticky` y el pin).
+
+---
+
+## 4. Lo que **no** se hace (y por qué)
+
+- **Lenis / smooth scroll: propongo no usarlo.** Secuestra el scroll nativo: rompe o degrada la búsqueda en página, el salto a anclas con foco, el scroll con teclado y el comportamiento que el usuario configuró en su sistema; cuesta 18.4 KB más. ScrollTrigger funciona perfectamente con el scroll nativo, y el "suavizado" visual se consigue con `scrub: 0.6` (el tween persigue a la posición del scroll). Si aun así lo quieres para escritorio, sería una fase opcional M11, solo con `pointer: fine` y desactivable con el interruptor Motion.
+- **Sin WebGL / Three.js:** peso y batería en móvil desproporcionados para una landing.
+- **Sin ocultar el cursor nativo, sin tilt 3D, sin parpadeos** (> 3 por segundo prohibido, WCAG 2.3.1).
+- **Sin cifras inventadas animadas.** Los "contadores" animan precios reales y números de paso, nunca "500+ clients" o "kilos perdidos".
+
+---
+
+## 5. Estrategia de rendimiento
+
+### 5.1 Principios
+1. **El contenido no espera al movimiento.** Todo es visible con HTML + CSS. GSAP solo aplica estados iniciales (`gsap.from`) a elementos que **todavía no están en pantalla** cuando se carga; lo que ya está visible no se oculta para re-animarlo.
+2. **Solo propiedades de composición:** `transform`, `opacity`, `clip-path` y variables CSS que alimentan esas propiedades. Nada de animar `width`, `top`, `height` o `filter` a gran escala. `will-change` solo durante la animación (GSAP lo gestiona con `force3D`).
+3. **Un único `requestAnimationFrame`:** el del ticker de GSAP. El cursor, el magnetismo y la rejilla se enganchan a él (`gsap.ticker.add`), no a listeners propios.
+4. **SplitText después de las fuentes:** `document.fonts.ready.then(...)` para que el corte por líneas no cambie al cargar Space Grotesk (evita CLS y saltos).
+5. **Sin pin en móvil**, `ScrollTrigger.config({ ignoreMobileResize: true })` y `ScrollTrigger.refresh()` tras cargar las imágenes lazy.
+6. **CSS primero:** barra de progreso (scroll-driven animations), sticky, intro del hero, marquee base y estados de foco son CSS. GSAP solo para lo que necesita estado o scrub coordinado.
+
+### 5.2 Presupuesto: dos bundles (**decisión tuya**)
+
+Hoy CLAUDE.md fija **JS ≤ 15 KB min** y dice que "no se sube nunca". Con GSAP es imposible cumplirla literalmente, así que propongo redefinirla así:
+
+| Bundle | Contenido | Cuándo se descarga | Meta propuesta |
+|---|---|---|---|
+| **Crítico** `main.[hash].js` | Collapse, navbar, precios, formulario, interruptor Motion, cargador del chunk | Siempre, como ahora | **≤ 15 KB min (se mantiene la meta actual)** |
+| **Movimiento** `motion.[hash].js` | gsap + ScrollTrigger + SplitText + módulos de animación propios | Solo si `prefers-reduced-motion: no-preference` **y** Motion no está en "off", tras el evento `load` y en `requestIdleCallback` (`import()` dinámico) | **≤ 140 KB min · ≤ 55 KB gzip** (123 / 49 de GSAP + ~15 / 5 de código propio) |
+| CSS | Igual que ahora + estilos del rediseño | Siempre | **≤ 130 KB min · ≤ 20 KB gzip (se mantiene)**. Margen actual: 7.4 KB min / 0.7 KB gzip. Es poco: si hace falta, recorto utilidades que dejen de usarse con el nuevo layout |
+
+Consecuencias: el chunk de movimiento no bloquea el pintado ni compite con el LCP, y quien pide menos movimiento **no descarga ni un byte de GSAP**. Técnicamente: esbuild con `--splitting --format=esm` y adaptar `scripts/hash-assets.mjs` y `scripts/size.mjs` para chunks (y `verify-html.mjs` si comprueba referencias de JS).
+
+Alternativas descartadas: (a) mantener 15 KB y escribir todo a mano con Web Animations API + scroll-driven animations: posible, pero el objetivo explícito es demostrar GSAP en el portafolio; (b) cargar GSAP en el bundle crítico: +123 KB de JS bloqueando la interactividad en móvil, sin necesidad.
+
+### 5.3 Metas de verificación
+- **Lighthouse móvil ≥ 95 en Performance** y 100 en Accessibility, Best Practices y SEO; escritorio ≥ 98. Como el servidor de `npm run preview` no comprime (F11 sacó 94 en preview frente a 97 en producción), en M1 mido **`main` en preview como línea base** y comparo siempre en las mismas condiciones: la rama no puede bajar más de 2 puntos respecto a esa línea base, y además vigilo **TBT < 150 ms** y **CLS = 0** en móvil.
+- **Cero scroll horizontal** a 320, 390 y 1440 px (comprobado con Playwright: `scrollWidth === clientWidth`).
+- **Sin errores en consola.**
+
+---
+
+## 6. Estrategia de accesibilidad
+
+| Riesgo | Medida |
+|---|---|
+| Movimiento vestibular | `prefers-reduced-motion: reduce` → el chunk de movimiento **no se carga**; el CSS de intro, marquee y transiciones está dentro de `@media (prefers-reduced-motion: no-preference)`. La página queda estática y completa |
+| Contenido que se mueve solo (WCAG 2.2.2) | Interruptor **Motion on/off** global (persistido en `localStorage`, con `try/catch`) + botón de pausa propio en el marquee |
+| Lectores de pantalla con texto partido | SplitText 3.13+ con `aria: "auto"` (pone `aria-label` con el texto original en el contenedor y `aria-hidden` en los fragmentos). Las líneas manuales del hero son `<span>` en línea que no alteran la lectura. Lo verifico con el árbol de accesibilidad de Playwright (`page.accessibility.snapshot()` / `ariaSnapshot`) |
+| Foco dentro de animaciones | Nada enfocable queda con `opacity: 0` o fuera de pantalla sin poder alcanzarse; el navbar oculto reaparece con `:focus-within`; el anillo de foco Volt se mantiene en todo |
+| Texto decorativo | Números gigantes, marquee, wordmark y contornos con `aria-hidden="true"`; nunca son la única fuente de información |
+| Contraste | Paleta AA intacta; el texto que pasa de Steel a Chalk ya cumple AA en su estado inicial (Steel 7.3:1 sobre Ink) |
+| Cursor y magnetismo | Solo `pointer: fine`, `aria-hidden`, `pointer-events: none`; el cursor nativo sigue visible |
+| Teclado | Recorrido completo con Tab en cada fase (Playwright pulsa Tab y comprueba que el elemento enfocado está en el viewport y tiene foco visible) |
+| Sin JS | Todo el contenido visible; precios mensuales en el HTML; sin estados ocultos dependientes de JS (se mantiene el failsafe de `.reveal-ready` mientras exista) |
+
+---
+
+## 7. Dependencias (requieren tu aprobación)
+
+| Paquete | Para qué | Tipo | Recomendación |
+|---|---|---|---|
+| `gsap` **3.15.1** (versión exacta) | Motor de animación. Incluye **ScrollTrigger** y **SplitText** en el mismo paquete: desde la 3.13 todos los plugins son gratuitos y están en npm, sin registro privado | devDependency (esbuild lo empaqueta) | **Sí.** Licencia: "Standard no-charge license" de GSAP (no es MIT: permite uso comercial gratis; la única restricción relevante es no usarlo en herramientas que compitan con Webflow). Válida para portafolio y para clientes |
+| `lenis` 1.3.27 | Smooth scroll | — | **No** (ver §4). Opcional en M11 si lo pides |
+| `playwright` | Capturas de pantalla escritorio/móvil, emulación de reduced-motion, comprobaciones de scroll horizontal, teclado, consola y árbol de accesibilidad | devDependency + descarga de Chromium (~150 MB en `~/.cache/ms-playwright`, fuera del repo) | **Sí**, necesario: hoy no hay ningún navegador instalado en el WSL, y me pediste verificar yo mismo |
+| `lighthouse` | Auditoría de rendimiento/accesibilidad por CLI, usando el Chromium de Playwright (`CHROME_PATH`) | devDependency | **Sí**, mismo motivo |
+
+Se añadirían dos scripts: `npm run shots` (capturas en `.cache/shots/`, ignorado por git) y `npm run lh` (Lighthouse móvil y escritorio contra `npm run preview`, informe JSON/HTML en `.cache/lighthouse/`).
+
+---
+
+## 8. Fases
+
+Cada fase cierra con: `npm run build`, `check`, `verify`, `size`, capturas Playwright (1440 px y 390 px, más 320 px para scroll horizontal, y una pasada con reduced-motion), Lighthouse a partir de M4, actualización de este documento (y de `DESIGN.md` si cambia una decisión), y **un commit local** (Conventional Commits). Sin `git push`.
+
+| Fase | Contenido | Verificación específica |
+|---|---|---|
+| **M0** ✔ | Este plan | — |
+| **M1 · Infraestructura** | Instalar dependencias aprobadas; esbuild con splitting y chunk `motion.js`; adaptar `hash-assets`, `size` y `verify`; cargador condicional (reduced-motion / Motion off / idle); interruptor Motion; scripts `shots` y `lh`; **línea base Lighthouse de `main` en preview** | Con reduced-motion emulado no se pide `motion.*.js` (comprobado en la red de Playwright); bundle crítico ≤ 15 KB |
+| **M2 · Tipografía y layout** | Escala display, `text-outline` (Utility API), números gigantes, composición asimétrica por sección, marquee estático. **Sin movimiento todavía** | Capturas antes/después; 0 scroll horizontal a 320 px; contraste |
+| **M3 · Capa global** | Barra de progreso (CSS scroll-driven), navbar ocultable + indicador de sección, cursor, botones magnéticos, rejilla viva | Teclado: navbar visible con foco; cursor ausente en emulación táctil |
+| **M4 · Hero + marquee** | Intro CSS, línea de pulso, parallax de foto y titular, marquee con velocidad de scroll y botón de pausa | **LCP y CLS** en Lighthouse móvil frente a la línea base; decisión sobre máscara inicial del H1 |
+| **M5 · About** | Número 01, revelado de imagen, titular que se lee con scroll (SplitText), iconos dibujados, spotlight | Árbol de accesibilidad del titular partido = texto original |
+| **M6 · Programs** | Reparto de cartas, contador de precios, borde cónico, pulso hacia el formulario | El cambio de precios sigue funcionando sin el chunk (bloqueando la petición en Playwright) |
+| **M7 · How it works** | Pin + scroll horizontal (lg+) con `containerAnimation`, línea de pulso, números que se rellenan; timeline vertical en móvil | Captura a mitad del pin; el orden de lectura y de Tab sigue siendo 01→04 |
+| **M8 · Results + FAQ** | Citas tipográficas, entrada por palabras, parallax diferencial; FAQ sticky y morph del icono | Badge "Sample testimonial" visible en todas las capturas intermedias |
+| **M9 · Book + footer + WhatsApp** | Titular, líneas de campos, animación de éxito, wordmark que se rellena, entrada de WhatsApp | Envío con datos válidos e inválidos en Playwright; aviso de marca ficticia intacto |
+| **M10 · Auditoría final** | Pasada completa: Lighthouse móvil/escritorio, reduced-motion, Motion off, sin JS, teclado, 320 px, consola; pulido de easings y tiempos; actualizar `DESIGN.md`, `CLAUDE.md` (metas de peso si las apruebas) y README | Todas las metas de §5.3 y §6 |
+| *M11 (opcional)* | Lenis en escritorio, solo si lo pides | Las mismas que M10 |
+
+---
+
+## 9. Decisiones pendientes
+
+1. **Presupuesto de JS en dos bundles** (§5.2): crítico ≤ 15 KB (igual) + chunk de movimiento diferido ≤ 140 KB min / 55 KB gzip, que no se descarga con reduced-motion.
+2. **Dependencias:** `gsap@3.15.1`, `playwright` (+ Chromium), `lighthouse`. Lenis: no.
+3. **Scroll horizontal en How it works** en lugar de en Programs (§2.4).
+4. **Sin loader a pantalla completa:** la intro del hero hace ese papel (§2.0).
