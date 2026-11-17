@@ -182,7 +182,36 @@ try {
       await context.close();
     }
 
-    // 4. Sin JS
+    // 4. Capa global (M3): navbar oculto al bajar y visible al subir, sección activa,
+    // cursor y botón magnético con el puntero dentro del CTA.
+    if (device === 'desktop') {
+      const { context, page } = await open(device);
+      await motionReady(page);
+      const headerY = () => page.evaluate(() => new DOMMatrix(getComputedStyle(document.querySelector('.site-header')).transform).m42);
+      await page.mouse.wheel(0, 1500);
+      await page.waitForTimeout(800);
+      if ((await headerY()) >= 0) fail('global: header did not hide on scroll down');
+      await page.evaluate(() => window.scrollTo({ top: document.getElementById('programs').offsetTop, behavior: 'instant' }));
+      await page.waitForTimeout(600);
+      const current = await page.evaluate(() => document.querySelector('.navbar-nav [aria-current="location"]')?.hash);
+      if (current !== '#programs') fail(`global: aria-current is ${current}, expected #programs`);
+      await page.mouse.wheel(0, -300);
+      await page.waitForTimeout(800);
+      if ((await headerY()) !== 0) fail('global: header did not come back on scroll up');
+      const cta = page.locator('.hero .btn-lg').first();
+      await cta.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(400);
+      const box = await cta.boundingBox();
+      await page.mouse.move(box.x + box.width / 2 + 40, box.y + box.height / 2, { steps: 8 });
+      await page.waitForTimeout(600);
+      const state = await page.evaluate(() => [document.querySelector('.cursor')?.className, getComputedStyle(document.querySelector('.hero .btn-lg')).transform]);
+      if (state[0] !== 'cursor is-visible is-active') fail(`global: cursor state "${state[0]}"`);
+      if (state[1] === 'none') fail('global: magnetic button did not move');
+      console.log('  global layer: ok');
+      await context.close();
+    }
+
+    // 5. Sin JS
     if (device === 'mobile') {
       const { context, page } = await open(device, { javaScriptEnabled: false });
       await scrollThrough(page, `${device}/no-js`);

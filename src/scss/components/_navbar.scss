@@ -29,6 +29,57 @@
   font-weight: 500;
 }
 
+// Sección visible (aria-current="location", lo pone el chunk de movimiento):
+// subrayado Volt que crece desde la izquierda. Color + forma, no solo color.
+.navbar-nav .nav-link {
+  position: relative;
+
+  &::after {
+    position: absolute;
+    right: $navbar-nav-link-padding-x;
+    bottom: .25rem;
+    left: $navbar-nav-link-padding-x;
+    height: 2px;
+    content: "";
+    background-color: $volt;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
+  }
+
+  &[aria-current]::after {
+    transform: scaleX(1);
+  }
+}
+
+// Barra de progreso de lectura bajo el navbar. Scroll-driven animations de CSS:
+// la animación avanza con el scroll de la página en lugar de con el tiempo, sin
+// JS. Donde no hay soporte (@supports) no se muestra. No va dentro de
+// @include motion: no se mueve sola, sigue al scroll que hace el usuario.
+.scroll-progress {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: 2px;
+    background-color: $volt;
+    transform-origin: left;
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes scroll-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 // Menú móvil desplegado: separación del logo y del CTA.
 // Desde lg el menú es horizontal y esto deja de aplicar.
 @include media-breakpoint-down(lg) {

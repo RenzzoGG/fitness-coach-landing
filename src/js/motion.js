@@ -10,6 +10,7 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
+import { setupGlobal } from './motion/global.js';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -24,8 +25,10 @@ const QUERIES = {
   finePointer: '(hover: hover) and (pointer: fine)',
 };
 
-// Cada fase añade aquí su módulo: (conditions) => void, llamado dentro del contexto.
-const SECTIONS = [];
+// Un módulo por sección: (conditions) => cleanup opcional. Se llaman dentro del
+// contexto de matchMedia, así que revert() deshace sus tweens y ScrollTriggers;
+// el cleanup devuelto se encarga de lo que GSAP no conoce (listeners, nodos creados).
+const SECTIONS = [setupGlobal];
 
 let mm = null;
 
@@ -33,7 +36,8 @@ export function start() {
   if (mm) return;
   mm = gsap.matchMedia();
   mm.add(QUERIES, (context) => {
-    for (const setup of SECTIONS) setup(context.conditions);
+    const cleanups = SECTIONS.map((setup) => setup(context.conditions)).filter(Boolean);
+    return () => cleanups.forEach((cleanup) => cleanup());
   });
   document.documentElement.classList.add('motion-ready');
 }
