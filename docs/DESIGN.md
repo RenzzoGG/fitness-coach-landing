@@ -314,6 +314,8 @@ fitness-coach-landing/
 | `esbuild` | Empaquetar y minificar el JS (Collapse + módulos propios) y servidor de desarrollo |
 | `@fontsource/space-grotesk`, `@fontsource/dm-sans` | Archivos woff2 autoalojados con su licencia (OFL) |
 | `sharp` | Optimizar imágenes y generar la imagen OG |
+| `gsap` (3.15.1 exacta, rama `motion-redesign`) | Motor de animación del rediseño; incluye ScrollTrigger y SplitText. Solo en el chunk diferido `motion.js` (ver `docs/MOTION-PLAN.md`) |
+| `playwright`, `lighthouse` (rama `motion-redesign`) | Solo verificación: `npm run shots` y `npm run lh` |
 
 **Descartado: PurgeCSS.** Elimina las clases que no aparecen en el HTML, pero el JS de Bootstrap agrega clases en tiempo de ejecución (`.show`, `.collapsing`, `.collapsed`), y PurgeCSS las borraría, lo que rompería el menú y el acordeón sin que se note hasta probar. Como ya importamos solo los módulos que usamos, el ahorro extra sería pequeño.
 
@@ -322,7 +324,8 @@ fitness-coach-landing/
   1. `node scripts/build.mjs`: limpia `dist/` y copia `index.html`, `static/`, las fuentes `woff2` necesarias y las imágenes optimizadas.
   2. `sass --load-path=node_modules --style=compressed --no-source-map --quiet-deps --silence-deprecation=import src/scss/main.scss dist/css/main.css`
   3. `postcss dist/css/main.css --replace --no-map --use autoprefixer`
-  4. `esbuild src/js/main.js --bundle --minify --format=esm --target=es2022 --outfile=dist/js/main.js`
+  4. `esbuild src/js/main.js --bundle --splitting --minify --format=esm --target=es2022 --outdir=dist/js --chunk-names=[name]`
+     - **`--splitting` (M1):** el `import('./motion.js')` dinámico de `motion-loader.js` sale como archivo aparte (`dist/js/motion.js`, GSAP + animaciones). `hash-assets.mjs` hashea primero el chunk, reescribe la referencia dentro de `main.js` y después hashea `main.js`; falla si aparece cualquier otro chunk (un módulo compartido entre ambos).
      - **Por qué `es2022` (F12):** esbuild **no lee `browserslist`** (solo lo usa Autoprefixer), así que el target se fija a mano. El mínimo de nuestro `browserslist` (Chrome 109, Safari 26.6, iOS 18.5, Firefox 155, Samsung 29) soporta ES2022 entero. Los navegadores sin módulos ES (Opera Mini, KaiOS) no ejecutan `type="module"`, y el sitio funciona sin JS. Con `es2020`, la única diferencia era rebajar un `??=` (21 B). Descartado: traducir `browserslist` con el paquete `browserslist` (una dependencia nueva) y escribir versiones de navegador a mano (se quedan viejas).
   5. `node scripts/hash-assets.mjs`: hash del contenido en los nombres (ver "Cache-busting").
   6. `node scripts/compress.mjs` (F12): junto a cada archivo de texto (`html`, `css`, `js`, `svg`, `webmanifest`, `txt`) escribe su `.br` (brotli calidad 11) y su `.gz` (gzip nivel 9) con `node:zlib`, sin dependencias. Va al final porque comprime los nombres ya hasheados. Fuentes e imágenes se omiten porque ya vienen comprimidas. Medido: 8 archivos, 186.5 KB → 29.5 KB en brotli (CSS 122.6 KB → 14.6 KB br, frente a 19.3 KB gzip). Caddy los sirve tal cual (ver "Deploy").
@@ -336,7 +339,7 @@ fitness-coach-landing/
   - Medido en F10: los JPG originales pesaban 236.7 KB entre las dos fotos; un móvil 375 px 2× descargaba 39.2 KB (AVIF 800w, −83 %) y un escritorio 1440 px 2×, 73.5 KB (−69 %).
   - **F11, recorte a 4:5** (aviso "Improve image delivery" de Lighthouse): las variantes eran 2:3 y `object-fit: cover` recortaba arriba y abajo, así que se descargaban píxeles que no se veían. Ahora se generan en 4:5 con el mismo centrado (comparado: la diferencia media es de 1/255 por canal, solo ruido de compresión) y `width`/`height` pasan a 1200×1500. Las 18 variantes bajan de 606.8 a 504.6 KB (−16.8 %): un móvil descarga 34.4 KB (−85 %) y un escritorio 1440 px 2×, 61.0 KB (−74 %).
 - **Fuentes:** locales, solo latin, `preload` de las 2 críticas y `font-display: swap`.
-- **Metas de peso (FINALES):** CSS **≤ 130 KB minificado / ≤ 20 KB gzip** y JS **≤ 15 KB minificado**.
+- **Metas de peso (FINALES):** CSS **≤ 130 KB minificado / ≤ 20 KB gzip**, JS **crítico ≤ 15 KB minificado** y, desde M1 (rama `motion-redesign`), **chunk de movimiento diferido ≤ 55 KB gzip**, que no se descarga con `prefers-reduced-motion: reduce` ni con el interruptor Motion apagado. `npm run size` sale con error si se supera alguna.
   - **Esta meta no se vuelve a subir.** Si una fase la supera, se detiene el trabajo y se propone qué recortar (utilidades, submódulos, CSS propio) antes de continuar. `npm run size` se ejecuta al cerrar cada fase.
   - Historial: 60/12 KB (estimación sin medir, F0) → 120/18 KB (F1, se superó por 0.2 KB en F2 al añadir los estilos base) → 130/20 KB (final, fijada por el usuario antes de F3).
   - La meta inicial de CSS (60 KB / 12 KB) era una estimación hecha sin medir. En F1 se comprobó que solo podía alcanzarse quitando componentes que usamos o con PurgeCSS (descartado). Mediciones de F1: Bootstrap completo 231.8 KB / 30.9 KB → módulos selectivos 166 KB / 22.4 KB → con submódulos de forms y utilidades responsive limitadas, 117.9 KB / 17.7 KB.

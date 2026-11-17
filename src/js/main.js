@@ -6,8 +6,10 @@ import { initNavbar } from './navbar.js';
 import { initPricingToggle } from './pricing-toggle.js';
 import { initBookingForm } from './form-validation.js';
 import { initReveal } from './reveal.js';
+import { initMotion } from './motion-loader.js';
 
 initNavbar();
 initPricingToggle();
 initBookingForm();
 initReveal();
+initMotion();

@@ -19,8 +19,10 @@ const ctx = await esbuild.context({
   entryPoints: [`${root}src/js/main.js`],
   bundle: true,
   format: 'esm',
+  splitting: true, // import('./motion.js') → js/motion.js, igual que el build
+  chunkNames: '[name]',
   target: 'es2022',
-  outfile: `${devDir}/js/main.js`,
+  outdir: `${devDir}/js`,
   logLevel: 'info',
 });
 

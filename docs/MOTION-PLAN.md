@@ -216,7 +216,7 @@ Cada fase cierra con: `npm run build`, `check`, `verify`, `size`, capturas Playw
 | Fase | Contenido | Verificación específica |
 |---|---|---|
 | **M0** ✔ | Este plan | — |
-| **M1 · Infraestructura** | Instalar dependencias aprobadas; esbuild con splitting y chunk `motion.js`; adaptar `hash-assets`, `size` y `verify`; cargador condicional (reduced-motion / Motion off / idle); interruptor Motion; scripts `shots` y `lh`; **línea base Lighthouse de `main` en preview** | Con reduced-motion emulado no se pide `motion.*.js` (comprobado en la red de Playwright); bundle crítico ≤ 15 KB |
+| **M1 · Infraestructura** ✔ | Instalar dependencias aprobadas; esbuild con splitting y chunk `motion.js`; adaptar `hash-assets`, `size` y `verify`; cargador condicional (reduced-motion / Motion off / idle); interruptor Motion; scripts `shots` y `lh`; **línea base Lighthouse de `main` en preview** | Con reduced-motion emulado no se pide `motion.*.js` (comprobado en la red de Playwright); bundle crítico ≤ 15 KB |
 | **M2 · Tipografía y layout** | Escala display, `text-outline` (Utility API), números gigantes, composición asimétrica por sección, marquee estático. **Sin movimiento todavía** | Capturas antes/después; 0 scroll horizontal a 320 px; contraste |
 | **M3 · Capa global** | Barra de progreso (CSS scroll-driven), navbar ocultable + indicador de sección, cursor, botones magnéticos, rejilla viva | Teclado: navbar visible con foco; cursor ausente en emulación táctil |
 | **M4 · Hero + marquee** | Intro CSS, línea de pulso, parallax de foto y titular, marquee con velocidad de scroll y botón de pausa | **LCP y CLS** en Lighthouse móvil frente a la línea base; decisión sobre máscara inicial del H1 |
@@ -230,9 +230,38 @@ Cada fase cierra con: `npm run build`, `check`, `verify`, `size`, capturas Playw
 
 ---
 
-## 9. Decisiones pendientes
+## 9. Decisiones (aprobadas el 2026-11-17)
+
+Aprobados los cinco puntos: dos bundles (crítico ≤ 15 KB min + movimiento ≤ 55 KB gzip, documentado en CLAUDE.md), `gsap` + `playwright` + `lighthouse`, sin Lenis, scroll horizontal en How it works y sin loader a pantalla completa.
+
+Texto original de las decisiones:
 
 1. **Presupuesto de JS en dos bundles** (§5.2): crítico ≤ 15 KB (igual) + chunk de movimiento diferido ≤ 140 KB min / 55 KB gzip, que no se descarga con reduced-motion.
 2. **Dependencias:** `gsap@3.15.1`, `playwright` (+ Chromium), `lighthouse`. Lenis: no.
 3. **Scroll horizontal en How it works** en lugar de en Programs (§2.4).
 4. **Sin loader a pantalla completa:** la intro del hero hace ese papel (§2.0).
+
+---
+
+## 10. Registro de fases
+
+### M1 · Infraestructura ✔
+- **Dependencias:** `gsap@3.15.1`, `playwright@1.65.1`, `lighthouse@13.6.0` (exactas). Chromium de Playwright: en este WSL no hay sudo para `playwright install-deps`, así que las tres librerías que faltaban (`libnss3`, `libnspr4`, `libasound2t64`) se descargaron con `apt-get download` y se extrajeron con `dpkg-deb -x` en `~/.cache/pw-libs`; `scripts/browser.mjs` las añade a `LD_LIBRARY_PATH`.
+- **Build:** esbuild con `--splitting`; `hash-assets.mjs` hashea `motion.js` y reescribe su referencia en `main.js`; `size.mjs` compara con las tres metas y sale con error; `verify` detecta un `js/motion.js` sin hash.
+- **Cargador** (`src/js/motion-loader.js`, bundle crítico): `import('./motion.js')` solo si el movimiento está permitido, tras `load` + `requestIdleCallback`. Reacciona al cambio de `prefers-reduced-motion` con la página abierta.
+- **Chunk** (`src/js/motion.js`): registra ScrollTrigger y SplitText y crea todo dentro de un `gsap.matchMedia()` con las condiciones `desktop` / `mobile` (breakpoint lg de Bootstrap) y `finePointer`; `stop()` = `revert()`.
+- **Interruptor Motion:** `<button aria-pressed>` en el navbar, estado en `localStorage.motion` y en `data-motion` de `<html>` (lo aplica el script inline del `<head>` antes de pintar). Oculto sin JS y con reduced-motion.
+- **Sass:** mixin `motion` en `_mixins.scss` (`prefers-reduced-motion: no-preference` + `:root:not([data-motion="off"])`); sustituye a las cuatro media queries que había. Detalle de Sass: dentro de `@content`, `&` ya incluye el prefijo `:root:not(…)`, así que una regla como `.btn:hover > &` hay que escribirla fuera y meter el `@include` dentro.
+- **Verificación:** `scripts/shots.mjs` y `scripts/lighthouse.mjs` (con `scripts/static-server.mjs`, que sirve brotli y los Cache-Control de Caddy, para medir en local algo parecido a producción).
+- **Bug de `main` encontrado por `shots`:** 8 px de scroll horizontal en móvil por el footer (`.row.g-5`: gutter de 3 rem = márgenes de −1.5 rem frente a 1 rem de padding del `container`). Corregido con `g-4 g-lg-5`.
+- **Pesos:** CSS 123.9 KB / 19.5 KB gzip · crítico 15 325 B (de 15 360: quedan 35 B; se recuperará al quitar `reveal.js` cuando GSAP asuma las entradas) · movimiento 121.0 KB / 47.8 KB gzip.
+- **Lighthouse (mediana de 3):**
+
+| | Performance | A11y | BP | SEO | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|---|
+| Línea base `main`, móvil | 100 | 100 | 100 | 100 | 1052 ms | 32 ms | 0 |
+| Línea base `main`, escritorio | 100 | 100 | 100 | 100 | 374 ms | 0 ms | 0 |
+| M1, móvil | 100 | 100 | 100 | 100 | 910 ms | 63 ms | 0 |
+| M1, escritorio | 100 | 100 | 100 | 100 | 421 ms | 0 ms | 0 |
+
+  La primera ejecución móvil sale siempre más baja (89 en `main`, 87 en M1): arranque en frío del WSL. Por eso se usa la mediana.

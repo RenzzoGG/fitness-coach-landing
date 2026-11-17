@@ -43,9 +43,21 @@ for (const path of [...filesIn('fonts', /\.woff2$/), ...filesIn('img', /\.(avif|
 // 2. El CSS referencia las fuentes (url(../fonts/…)): se reescribe y luego se hashea.
 rewrite('css/main.css', '../');
 hashFile('css/main.css');
+
+// 3. JS: main.js importa el chunk de movimiento con import('./motion.js').
+// Primero se hashea el chunk, luego se reescribe esa referencia en main.js y por
+// último se hashea main.js (su hash cambia si cambia el del chunk).
+const js = readdirSync(`${dist}js`);
+const unexpected = js.filter((f) => !['main.js', 'motion.js'].includes(f));
+if (unexpected.length) throw new Error(`Unexpected JS output (shared chunk?): ${unexpected.join(', ')}`);
+hashFile('js/motion.js');
+const motion = renamed.get('js/motion.js').slice(3);
+const main = readFileSync(`${dist}js/main.js`, 'utf8');
+if (!main.includes('"./motion.js"')) throw new Error('main.js does not import ./motion.js');
+writeFileSync(`${dist}js/main.js`, main.replace('"./motion.js"', `"./${motion}"`));
 hashFile('js/main.js');
 
-// 3. El HTML referencia todo, con rutas relativas y absolutas (og:image).
+// 4. El HTML referencia todo, con rutas relativas y absolutas (og:image).
 rewrite('index.html');
 
 console.log(`Hashed ${renamed.size} assets (css, js, fonts, images, og-image)`);

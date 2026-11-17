@@ -70,7 +70,7 @@
   background-color: $volt;
   border-radius: 50%;
 
-  @media (prefers-reduced-motion: no-preference) {
+  @include motion {
     animation: pulse-dot 2s ease-in-out infinite;
   }
 }

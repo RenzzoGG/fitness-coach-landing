@@ -47,6 +47,7 @@
 @import "bootstrap/scss/utilities/api"; // genera las utilidades; siempre al final de Bootstrap
 
 // 6. Estilos propios
+@import "mixins";
 @import "fonts";
 @import "base";
 @import "components/navbar";

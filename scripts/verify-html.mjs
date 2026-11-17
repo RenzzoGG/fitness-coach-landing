@@ -219,7 +219,7 @@ for (const icon of manifest.icons) check(existsSync(join(dist, icon.src)), `Íco
 check(existsSync(`${dist}robots.txt`) && existsSync(`${dist}favicon.svg`), 'Faltan robots.txt o favicon.svg');
 // dist/ debe contener solo el build de producción: un main.css/main.js sin hash
 // significa que algo (p. ej. un dev server antiguo) escribió ahí.
-for (const stray of ['css/main.css', 'js/main.js']) check(!existsSync(dist + stray), `dist/${stray} sin hash: dist/ está contaminado (vuelve a ejecutar npm run build)`);
+for (const stray of ['css/main.css', 'js/main.js', 'js/motion.js']) check(!existsSync(dist + stray), `dist/${stray} sin hash: dist/ está contaminado (vuelve a ejecutar npm run build)`);
 
 // ---------------------------------------------------------------------------
 // Resultado

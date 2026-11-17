@@ -1,6 +1,6 @@
 # CLAUDE.md: Pulse Theory landing
 
-Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coaching de fitness online. Bootstrap 5.3 personalizado con Sass y JS vanilla. El diseño completo y el plan por fases están en `docs/DESIGN.md`: léelo antes de trabajar y sigue sus decisiones.
+Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coaching de fitness online. Bootstrap 5.3 personalizado con Sass y JS vanilla. El diseño completo y el plan por fases están en `docs/DESIGN.md`: léelo antes de trabajar y sigue sus decisiones. En la rama `motion-redesign`, el rediseño con GSAP sigue `docs/MOTION-PLAN.md` (fases M0–M10).
 
 ## Contexto del usuario
 - Estudiante de Ingeniería de Software y freelance. Este proyecto es para **aprender Bootstrap 5 a fondo**.
@@ -15,10 +15,13 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 
 ## Comandos
 - `npm run dev`: watch de Sass y JS más un servidor local (http://localhost:5173) sobre `.cache/dev/`. Nunca escribe en `dist/`.
-- `npm run preview`: sirve `dist/` (el build de producción, con hashes) en http://localhost:4173. Es el que se usa para Lighthouse.
+- `npm run preview`: sirve `dist/` (el build de producción, con hashes) en http://localhost:4173 para probarlo a mano. No comprime: Lighthouse se mide con `npm run lh`.
 - `npm run build`: build de producción en `dist/`.
-- `npm run check`: verifica que cada clase del HTML exista en el CSS. `npm run size`: peso del CSS y del JS.
-- `npm run verify`: `html-validate` (estándar HTML, preset recommended) + auditoría propia de `dist/` (estructura HTML, ids, títulos, anclas, ARIA, etiquetas, imágenes, landmarks, meta/OG y referencias rotas). Ejecutar `build`, `check`, `verify` y `size` al cerrar cada fase.
+- `npm run check`: verifica que cada clase del HTML exista en el CSS. `npm run size`: peso del CSS y de los dos bundles de JS, comparado con las metas (sale con error si alguna se supera).
+- `npm run verify`: `html-validate` (estándar HTML, preset recommended) + auditoría propia de `dist/` (estructura HTML, ids, títulos, anclas, ARIA, etiquetas, imágenes, landmarks, meta/OG y referencias rotas). Ejecutar `build`, `check`, `verify`, `size`, `shots` y `lh` al cerrar cada fase.
+- `npm run shots [-- etiqueta]`: Playwright sobre `dist/` (escritorio 1440, móvil 390, estrecho 320): capturas por sección en `.cache/shots/<etiqueta>/` y comprobaciones (scroll horizontal, errores de consola, chunk de movimiento con/sin reduced-motion, interruptor Motion, recorrido con Tab, árbol de accesibilidad igual con y sin movimiento). Sale con error si algo falla.
+- `npm run lh [-- etiqueta]`: Lighthouse móvil y escritorio ×3 (mediana) sobre `dist/` servido como en producción (brotli + Cache-Control, `scripts/static-server.mjs`). Informes en `.cache/lighthouse/<etiqueta>/`.
+- En este WSL no hay sudo: Chromium usa librerías extraídas en `~/.cache/pw-libs` (lo resuelve `scripts/browser.mjs`).
 - Las imágenes responsive se generan dentro del build (`scripts/images.mjs`, con caché en `.cache/img`).
 - `npm run og`: regenera `src/static/og-image.png` (versionada). Solo hace falta si cambia la marca o el titular.
 
@@ -36,18 +39,26 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 
 ## JavaScript propio
 - Vanilla, módulos ES en `src/js/`, un módulo por funcionalidad, inicializados desde `main.js`.
+- **Dos bundles** (esbuild `--splitting`): el **crítico** (`main.js`) y el **chunk de movimiento** (`motion.js` + `src/js/motion/`), que solo pide `motion-loader.js` con `import()` dinámico, tras `load` y en `requestIdleCallback`, y **nunca** con `prefers-reduced-motion: reduce` ni con el interruptor Motion apagado. GSAP solo se importa desde el chunk.
+- Toda animación GSAP se crea dentro del `gsap.matchMedia()` de `motion.js` (así `stop()` la revierte). El contenido nunca depende del chunk para verse.
+- CSS de movimiento: siempre con `@include motion { … }` (`_mixins.scss`), que combina `prefers-reduced-motion: no-preference` y el interruptor `data-motion="off"`.
 - Mejora progresiva: el contenido debe verse y entenderse sin JS (precios mensuales en el HTML, secciones visibles).
 - Animaciones: respetar siempre `prefers-reduced-motion`.
 
 ## Dependencias
-- Aprobadas: `bootstrap`, `sass`, `postcss`, `postcss-cli`, `autoprefixer`, `esbuild`, `@fontsource/space-grotesk`, `@fontsource/dm-sans`, `sharp`, `html-validate` (validación del estándar HTML en `npm run verify`).
+- Aprobadas: `bootstrap`, `sass`, `postcss`, `postcss-cli`, `autoprefixer`, `esbuild`, `@fontsource/space-grotesk`, `@fontsource/dm-sans`, `sharp`, `html-validate` (validación del estándar HTML en `npm run verify`), `gsap` (versión exacta; ScrollTrigger y SplitText vienen incluidos), `playwright` y `lighthouse` (solo verificación).
+- **Lenis descartado** (secuestra el scroll nativo; ver `docs/MOTION-PLAN.md` §4).
 - **Cualquier dependencia nueva requiere preguntar antes** y explicar para qué sirve.
 
 ## Calidad
 - **Mobile first:** estilos base para móvil y breakpoints hacia arriba (`media-breakpoint-up`). Sin scroll horizontal a 320 px.
 - **Accesibilidad:** contraste AA (la paleta está en DESIGN.md §3; nunca texto blanco sobre Volt), `<label>` en todos los inputs, foco visible, navegación completa con teclado, landmarks, un solo `h1`, `alt` descriptivos.
 - **Rendimiento:** fuentes locales woff2 (solo latin), imágenes AVIF/WebP con `width`/`height` y lazy-load (menos el hero), sin peticiones a terceros.
-- **Meta final de peso:** CSS ≤ 130 KB min / ≤ 20 KB gzip, JS ≤ 15 KB min. Comprobar con `npm run size` al cerrar cada fase. **No se sube nunca:** si no se cumple, detenerse y proponer qué recortar.
+- **Meta final de peso** (aprobada el 2026-11-17 al dividir el JS en dos bundles):
+  - CSS ≤ 130 KB min / ≤ 20 KB gzip.
+  - JS **crítico** (`main.*.js`) ≤ 15 KB min.
+  - JS **de movimiento** (`motion.*.js`, diferido) ≤ 55 KB gzip. No se descarga con reduced-motion.
+  - Comprobar con `npm run size` al cerrar cada fase. **No se sube nunca:** si no se cumple, detenerse y proponer qué recortar.
 - Nunca edites `dist/` a mano: es generado e ignorado por git.
 - **Cache-busting:** en el HTML fuente se escriben rutas sin hash (`css/main.css`, `img/…`); el build añade el hash del contenido al nombre. Nunca escribas a mano un nombre con hash ni un `?v=`. `index.html` no debe cachearse largo en el servidor ni en Cloudflare.
 

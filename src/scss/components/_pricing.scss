@@ -107,7 +107,7 @@
 // (data-billing no existe al cargar). Cada cambio de estado cambia el
 // animation-name y la animación arranca de cero hacia el estado correcto:
 // sin timers ni animationend, no se puede trabar con clics rápidos.
-@media (prefers-reduced-motion: no-preference) {
+@include motion {
   [data-billing] [data-period] {
     animation: .3s ease both;
     animation-delay: calc(var(--card-index, 0) * 60ms); // escalonado por tarjeta

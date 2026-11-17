@@ -53,3 +53,73 @@
     margin-left: map.get($spacers, 3);
   }
 }
+
+// Interruptor "Motion" (motion-loader.js). Sin JS no haría nada y con
+// reduced-motion no hay animaciones que pausar: en ambos casos no se muestra.
+// Es un botón con aria-pressed, no un checkbox: no envía datos y su estado se
+// anuncia como "pressed / not pressed". Píldora propia en lugar de
+// .form-switch, porque .form-switch exige un <input> y su <label>.
+.motion-toggle {
+  display: none;
+  gap: .625rem;
+  align-items: center;
+  padding: .5rem 0;
+  font-weight: 500;
+  color: $navbar-dark-color;
+  background: none;
+  border: 0;
+
+  &:hover {
+    color: $navbar-dark-hover-color;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .js & {
+      display: inline-flex;
+    }
+  }
+}
+
+.motion-toggle-track {
+  position: relative;
+  width: 2rem;
+  height: 1.125rem;
+  border: 1px solid $rule; // 3:1 o más: es parte de un control
+  border-radius: $border-radius-pill;
+  transition: background-color .2s ease;
+
+  // La perilla: Steel apagada a la izquierda, Ink sobre Volt encendida a la derecha.
+  &::after {
+    position: absolute;
+    top: .1875rem;
+    left: .1875rem;
+    width: .625rem;
+    height: .625rem;
+    content: "";
+    background-color: $steel;
+    border-radius: 50%;
+    transition: transform .2s ease;
+  }
+
+  [aria-pressed="true"] > & {
+    background-color: $volt;
+    border-color: $volt;
+
+    &::after {
+      background-color: $ink;
+      transform: translateX(.875rem);
+    }
+  }
+}
+
+@include media-breakpoint-down(lg) {
+  .motion-toggle {
+    margin-top: map.get($spacers, 3);
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .motion-toggle {
+    margin-left: map.get($spacers, 3);
+  }
+}

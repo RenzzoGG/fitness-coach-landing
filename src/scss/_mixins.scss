@@ -1,0 +1,24 @@
+// =============================================================================
+// Mixins propios
+// =============================================================================
+
+// Movimiento permitido = el sistema no pide reducirlo Y el interruptor "Motion"
+// del navbar está encendido (sin data-motion="off" en <html>, ver motion-loader.js).
+// Sustituye a `@media (prefers-reduced-motion: no-preference)` en el CSS propio.
+// Funciona anidado (`.x { @include motion { … } }`) y en la raíz del archivo.
+// Ojo: para selectores que empiezan por una clase de <html> (.js) no sirve,
+// porque :root no puede ser descendiente de sí mismo; ahí se escribe a mano
+// `.js:not([data-motion="off"])` (ver .reveal en _base.scss).
+@mixin motion {
+  @media (prefers-reduced-motion: no-preference) {
+    @if & {
+      :root:not([data-motion="off"]) & {
+        @content;
+      }
+    } @else {
+      :root:not([data-motion="off"]) {
+        @content;
+      }
+    }
+  }
+}
