@@ -246,6 +246,41 @@ try {
       await context.close();
     }
 
+    // 4c. About (M5): titular partido en palabras con el texto original como nombre
+    // accesible, palabras que cambian de color con el scroll, ventana de la foto,
+    // tarjetas con línea Volt y spotlight bajo el puntero.
+    if (device === 'desktop') {
+      const { context, page } = await open(device);
+      await motionReady(page);
+      const ORIGINAL = "Hi, I'm Mateo. I coach strength for people with real schedules.";
+      await page.evaluate(() => window.scrollTo({ top: document.getElementById('about').offsetTop - innerHeight * 0.6, behavior: 'instant' }));
+      await page.waitForTimeout(1200);
+      const title = await page.evaluate(() => {
+        const h = document.getElementById('about-title');
+        return { label: h.getAttribute('aria-label'), words: h.querySelectorAll('[aria-hidden="true"]').length, first: getComputedStyle(h.firstElementChild).color, last: getComputedStyle(h.lastElementChild).color };
+      });
+      const name = await page.getByRole('heading', { level: 2, name: ORIGINAL, exact: true }).count();
+      if (title.label !== ORIGINAL || name !== 1) fail(`about: split heading name is "${title.label}" (role query matched ${name})`);
+      if (title.words < 10) fail(`about: heading not split into words (${title.words})`);
+      if (title.first === title.last) fail('about: heading words do not change colour with scroll');
+      await page.evaluate(() => window.scrollTo({ top: document.querySelector('.value-card').getBoundingClientRect().top + scrollY - innerHeight * 0.5, behavior: 'instant' }));
+      await page.waitForTimeout(1800);
+      const cards = await page.evaluate(() => {
+        const card = document.querySelector('.value-card');
+        return { line: getComputedStyle(card, '::before').transform, opacity: getComputedStyle(card).opacity, clip: getComputedStyle(document.querySelector('.about-media picture')).clipPath };
+      });
+      if (cards.line === 'none' || cards.line.startsWith('matrix(0,')) fail(`about: value card line did not grow (${cards.line})`);
+      if (cards.opacity !== '1') fail(`about: value card opacity ${cards.opacity} after entering`);
+      const box = await page.locator('.value-card').first().boundingBox();
+      await page.mouse.move(box.x + 60, box.y + 60, { steps: 4 });
+      await page.waitForTimeout(500);
+      const spot = await page.evaluate(() => [document.querySelector('.value-card').style.getPropertyValue('--mx'), getComputedStyle(document.querySelector('.value-card'), '::after').opacity]);
+      if (!spot[0] || spot[1] !== '1') fail(`about: spotlight not following pointer (${spot.join()})`);
+      await page.screenshot({ path: `${out}/desktop-about-cards.png` });
+      console.log(`  about: ok (image clip at mid-scroll: ${cards.clip})`);
+      await context.close();
+    }
+
     // 5. Sin JS
     if (device === 'mobile') {
       const { context, page } = await open(device, { javaScriptEnabled: false });

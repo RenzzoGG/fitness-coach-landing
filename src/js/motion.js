@@ -12,6 +12,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import { setupGlobal } from './motion/global.js';
 import { setupHero } from './motion/hero.js';
+import { setupAbout } from './motion/about.js';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -26,10 +27,11 @@ const QUERIES = {
   finePointer: '(hover: hover) and (pointer: fine)',
 };
 
-// Un módulo por sección: (conditions) => cleanup opcional. Se llaman dentro del
+// Un módulo por sección: (conditions, context) => cleanup opcional. context sirve
+// para crear animaciones más tarde dentro del mismo contexto (context.add). Se llaman dentro del
 // contexto de matchMedia, así que revert() deshace sus tweens y ScrollTriggers;
 // el cleanup devuelto se encarga de lo que GSAP no conoce (listeners, nodos creados).
-const SECTIONS = [setupGlobal, setupHero];
+const SECTIONS = [setupGlobal, setupHero, setupAbout];
 
 let mm = null;
 
@@ -40,7 +42,7 @@ export function start() {
   document.documentElement.classList.add('motion-ready');
   mm = gsap.matchMedia();
   mm.add(QUERIES, (context) => {
-    const cleanups = SECTIONS.map((setup) => setup(context.conditions)).filter(Boolean);
+    const cleanups = SECTIONS.map((setup) => setup(context.conditions, context)).filter(Boolean);
     return () => cleanups.forEach((cleanup) => cleanup());
   });
 }

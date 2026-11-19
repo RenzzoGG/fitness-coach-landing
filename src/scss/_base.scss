@@ -216,3 +216,31 @@ h1, h2, h3, h4,
 @keyframes reveal-failsafe {
   to { opacity: 1; transform: none; }
 }
+
+// Spotlight (M5): halo Volt que sigue al puntero dentro de una tarjeta. El JS
+// del chunk (motion/utils.js) escribe --mx/--my; sin él, no se muestra nunca.
+// isolation crea un contexto de apilamiento: el halo (z-index: -1) queda sobre
+// el fondo de la tarjeta pero debajo de su texto, sin tocar el contenido.
+.spotlight {
+  isolation: isolate;
+
+  &::after {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    content: "";
+    background: radial-gradient(16rem circle at var(--mx, 50%) var(--my, 50%), rgba($volt, .09), transparent 70%);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity .3s;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .spotlight:hover::after {
+    @include motion {
+      opacity: 1;
+    }
+  }
+}

@@ -25,3 +25,18 @@
 .value-icon {
   color: $volt;
 }
+
+// Línea Volt en el borde superior de las tarjetas de valores (M5): crece de
+// izquierda a derecha al entrar. --line (0–1) la anima GSAP; sin el chunk vale
+// 0 y la tarjeta queda como siempre. transform: scaleX → solo compositor.
+.value-card::before {
+  position: absolute;
+  top: -1px;
+  right: $card-spacer-x;
+  left: $card-spacer-x;
+  height: 2px;
+  content: "";
+  background-color: $volt;
+  transform: scaleX(var(--line, 0));
+  transform-origin: left;
+}

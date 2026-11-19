@@ -129,7 +129,16 @@ function liveGrid() {
   };
 }
 
+// Números de sección gigantes (01–06, decorativos): suben más despacio que la
+// página mientras se cruza su sección (parallax, scrub).
+function sectionIndexes() {
+  for (const index of document.querySelectorAll('.section-index')) {
+    gsap.fromTo(index, { yPercent: 25 }, { yPercent: -25, ease: 'none', scrollTrigger: { trigger: index.closest('.section'), start: 'top bottom', end: 'bottom top', scrub: 0.6 } });
+  }
+}
+
 export function setupGlobal({ finePointer }) {
+  sectionIndexes();
   const cleanups = [smartNavbar(), activeSection()];
   if (finePointer) cleanups.push(cursor(), magnetic(), liveGrid());
   return () => cleanups.forEach((cleanup) => cleanup());
