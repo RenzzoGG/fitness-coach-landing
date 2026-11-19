@@ -4,21 +4,46 @@
 @use "sass:map";
 
 .hero {
+  // Tamaño del titular, compartido por .hero-pulse (en em) y por la foto (lg+).
+  // Móvil: sale del ancho de la ventana (11.4vw), como siempre.
+  --hero-title-size: clamp(2.5rem, 11.4vw, 10rem);
   position: relative;
+  // Padding aquí y no con .py-*: las utilidades llevan !important y Bootstrap
+  // no genera padding-top responsive. En móvil = .py-6 (4.5rem), como antes.
+  padding-block: map.get($spacers, 6);
   overflow: hidden;
+
+  // Escritorio: el H1, la línea de pulso, los dos CTA y la mano con la mancuerna
+  // deben caber sobre el pliegue (1440×900, 1366×768, 1280×720). El titular es
+  // el menor de tres topes:
+  // - el ancho: 11.4vw;
+  // - el container: "Train with intent." mide ≈ 8.05em, así que el tope es el
+  //   ancho útil del container / 8.05 (sin él, entre 1200 y 1399 px la línea no
+  //   cabía en el container de 1140 px y el H1 pasaba a 4 líneas);
+  // - el alto: lo que deja la ventana tras navbar, eyebrow y copy (23.2rem),
+  //   repartido entre 3 líneas × .92 = 2.76em.
+  @include media-breakpoint-up(lg) {
+    --hero-title-container: 7.25rem; // container lg: 960 px
+    --hero-title-size: max(4.5rem, min(11.4vw, var(--hero-title-container), calc((100vh - 23.2rem) / 2.76)));
+    padding-top: map.get($spacers, 4);
+    padding-bottom: map.get($spacers, 7);
+  }
+
+  @include media-breakpoint-up(xl) {
+    --hero-title-container: 8.6rem; // container xl: 1140 px
+  }
+
+  @include media-breakpoint-up(xxl) {
+    --hero-title-container: 10rem; // container xxl: 1320 px
+  }
 }
 
 // Titular tipo cartel: el tamaño sale del ancho de la ventana (clamp) y no de
 // RFS, porque RFS deja de escalar a partir de 1200px y aquí queremos que la
 // línea más larga ("Train with intent.") ocupe casi todo el container.
 // Cada .line es un bloque: los cortes son fijos en todos los tamaños.
-// Titular tipo cartel: el tamaño sale del ancho de la ventana (clamp) y no de
-// RFS, porque RFS deja de escalar a partir de 1200px y aquí queremos que la
-// línea más larga ("Train with intent.") ocupe casi todo el container.
-// Cada .line es un bloque: los cortes son fijos en todos los tamaños.
-// La variable la comparte .hero-pulse para medirse en "líneas del titular".
+// La variable (--hero-title-size, en .hero) la comparten .hero-pulse y la foto.
 .hero-headline {
-  --hero-title-size: clamp(2.5rem, 11.4vw, 10rem);
   position: relative;
   isolation: isolate; // la línea de pulso (z-index: -1) queda detrás del texto
 }
@@ -76,13 +101,37 @@
 
 .hero-copy {
   padding-top: map.get($spacers, 4);
+
+  .lead {
+    margin-bottom: map.get($spacers, 5);
+  }
 }
 
-// Desde xl la foto sube hasta el hueco que deja la última línea ("real life."
-// es la más corta), así el titular y la foto se tocan sin taparse.
-@include media-breakpoint-up(xl) {
+// Escritorio: la foto sube hasta la altura de la 3.ª línea del titular ("real
+// life." es la más corta y deja el hueco), con el margen medido en líneas del
+// titular (.92em) menos los descendentes de la 2.ª (.2em). El marco pasa de 4:5
+// a 16:10 (--bs-aspect-ratio, la variable de .ratio de Bootstrap) y el recorte
+// baja al 92 % de la foto (se ve del 46 al 96 % de su alto): la mano y la
+// mancuerna, que ocupan del 50 al 93 %, quedan enteras sobre el pliegue.
+@include media-breakpoint-up(lg) {
+  .hero-copy {
+    padding-top: map.get($spacers, 3);
+
+    .lead {
+      margin-bottom: map.get($spacers, 4);
+    }
+  }
+
   .hero-figure {
-    margin-top: -9rem;
+    margin-top: calc(var(--hero-title-size) * -.72);
+  }
+
+  .hero-media {
+    --#{$prefix}aspect-ratio: 62.5%;
+
+    img {
+      object-position: 50% 92%;
+    }
   }
 }
 

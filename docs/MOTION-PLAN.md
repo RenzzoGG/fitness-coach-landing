@@ -359,3 +359,11 @@ Texto original de las decisiones:
 | Línea base `main`, escritorio | 100 | 100 | 100 | 100 | 374 ms | 0 ms | 0 |
 | **Final, móvil** | 100 | 100 | 100 | 100 | 1020 ms | 11 ms | 0 |
 | **Final, escritorio** | 100 | 100 | 100 | 100 | 368 ms | 0 ms | 0 |
+
+### Corrección previa al merge: hero sobre el pliegue, WhatsApp y cursor en táctil
+- **Hero en escritorio:** antes de corregirlo, ninguno de los tres tamaños cumplía (CTA en y=879 / 1010 / 840) y a 1366×768 el H1 tenía 4 líneas. Ahora: tamaño del titular = mínimo de `11.4vw`, el tope del container y un tope por alto de ventana; foto subida hasta la 3.ª línea, en un marco 16:10 (`--bs-aspect-ratio`) recortado al 92 %. El parallax de escritorio arranca con `scale: 1.08`, `yPercent: 0` y `transformOrigin: 50% 92%` (con el 1.15 / −6 % de móvil la mancuerna se salía del marco). Detalle en DESIGN.md §6.1. Resultado con movimiento y con reduced-motion: CTA en 795 / 733 / 702 px, foto en 788 / 695 / 673 px (sobre 900 / 768 / 720). Móvil sin cambios.
+- **WhatsApp:** pasa por debajo de `#programs` en el orden de apilamiento (solo CSS, DESIGN.md §6.9).
+- **Cursor:** se ignoran los eventos con `pointerType: "touch"` (un portátil táctil tiene puntero principal fino, así que el anillo existe); al tocar se oculta. El magnetismo también ignora el dedo. En móvil el anillo ni se crea.
+- **Nuevas comprobaciones en `shots`:** pliegue en los tres tamaños, calculando la geometría de `object-fit: cover` para asegurar que la mano y la mancuerna caen dentro del marco; WhatsApp frente a las tarjetas en 390 / 320 / 1280 px; táctil en móvil y en un portátil táctil (eventos de puntero sintéticos). La espera al final del pin de How it works pasa a `waitForFunction`: una vez falló con la espera fija de 1.2 s en un WSL cargado.
+- **Pesos:** CSS 115.1 KB / 19.7 KB gzip · crítico 14.9 KB · movimiento 134.1 KB / 51.8 KB gzip (metas sin cambios).
+- **Lighthouse (mediana de 5):** móvil 100 · 100 · 100 · 100 (LCP 905 ms, TBT 10 ms, CLS 0); escritorio 100 en todo (LCP 364 ms).

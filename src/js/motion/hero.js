@@ -5,7 +5,7 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-function heroParallax() {
+function heroParallax(desktop) {
   // scrub: 0.6 → la animación persigue a la posición del scroll con 0.6 s de
   // retraso: suaviza el movimiento sin secuestrar el scroll (la razón para no usar Lenis).
   const scroll = { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.6 };
@@ -17,7 +17,12 @@ function heroParallax() {
     ease: 'none',
     scrollTrigger: scroll,
   });
-  gsap.fromTo('.hero-media img', { scale: 1.15, yPercent: -6 }, { yPercent: 6, ease: 'none', scrollTrigger: scroll });
+  // Escritorio: el marco es 16:10 y el recorte está abajo (object-position 50% 92%,
+  // _hero.scss) para que la mano y la mancuerna se vean sobre el pliegue. El zoom
+  // parte de ese mismo punto y arranca sin desplazamiento: con el 1.15 / −6 % de
+  // móvil, la mancuerna se salía del marco.
+  if (desktop) gsap.fromTo('.hero-media img', { scale: 1.08, yPercent: 0, transformOrigin: '50% 92%' }, { yPercent: 6, ease: 'none', scrollTrigger: scroll });
+  else gsap.fromTo('.hero-media img', { scale: 1.15, yPercent: -6 }, { yPercent: 6, ease: 'none', scrollTrigger: scroll });
   gsap.to('.hero .bg-grid', { yPercent: 30, ease: 'none', scrollTrigger: scroll });
 }
 
@@ -50,7 +55,7 @@ function marqueeVelocity() {
   };
 }
 
-export function setupHero() {
-  heroParallax();
+export function setupHero({ desktop }) {
+  heroParallax(desktop);
   return marqueeVelocity();
 }

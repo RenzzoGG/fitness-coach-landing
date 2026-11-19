@@ -63,12 +63,18 @@ function cursor() {
   const x = gsap.quickTo(ring, 'x', { duration: 0.35, ease: 'power3.out' });
   const y = gsap.quickTo(ring, 'y', { duration: 0.35, ease: 'power3.out' });
 
+  // Solo el ratón mueve el anillo. En un portátil táctil (puntero principal
+  // fino, así que el anillo existe) tocar la pantalla también genera eventos de
+  // puntero: con el dedo el anillo se oculta y no reacciona.
+  const touch = (event) => event.pointerType === 'touch' && (ring.classList.remove('is-visible'), true);
   const move = (event) => {
+    if (touch(event)) return;
     x(event.clientX);
     y(event.clientY);
     ring.classList.add('is-visible');
   };
   const over = (event) => {
+    if (touch(event)) return;
     const target = event.target.closest('a, button, label, summary, select, input, textarea');
     ring.classList.toggle('is-active', Boolean(target));
     // En un botón la etiqueta sería redundante y taparía su texto: solo en enlaces de texto.
@@ -77,10 +83,12 @@ function cursor() {
   const leave = () => ring.classList.remove('is-visible');
 
   addEventListener('pointermove', move, { passive: true });
+  addEventListener('pointerdown', touch, { passive: true });
   document.addEventListener('pointerover', over);
   document.documentElement.addEventListener('pointerleave', leave);
   return () => {
     removeEventListener('pointermove', move);
+    removeEventListener('pointerdown', touch);
     document.removeEventListener('pointerover', over);
     document.documentElement.removeEventListener('pointerleave', leave);
     ring.remove();
@@ -95,6 +103,7 @@ function magnetic() {
     const x = gsap.quickTo(button, 'x', { duration: 0.4, ease: 'power3.out' });
     const y = gsap.quickTo(button, 'y', { duration: 0.4, ease: 'power3.out' });
     const move = (event) => {
+      if (event.pointerType === 'touch') return; // con el dedo, el botón no se mueve
       const r = button.getBoundingClientRect();
       x((event.clientX - r.left - r.width / 2) * 0.3);
       y((event.clientY - r.top - r.height / 2) * 0.4);

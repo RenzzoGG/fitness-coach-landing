@@ -382,7 +382,9 @@ try {
         if (mid.lit < 1 || mid.lit > 3) fail(`desktop/how: ${mid.lit} steps lit at mid-pin`);
         if (await overflow(page)) fail('desktop/how: horizontal scroll during pin');
         await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), start + spacer + 50);
-        await page.waitForTimeout(1200);
+        // El scrub (0.6 s) termina de llevar el timeline al final; en un WSL cargado
+        // una espera fija de 1.2 s se quedó corta una vez: se espera la condición.
+        await page.waitForFunction(() => document.querySelectorAll('#how .step.is-lit').length === 4, null, { timeout: 3000 }).catch(() => {});
         const end = await state();
         if (end.lit !== 4) fail(`desktop/how: ${end.lit} steps lit after the pin`);
         console.log(`  how: ok (pin ${spacer}px, mid x ${Math.round(mid.x)}px, lit ${mid.lit}/4)`);
@@ -491,6 +493,129 @@ try {
       await page.screenshot({ path: `${out}/${device}-full-nojs.png`, fullPage: true });
       await context.close();
     }
+  }
+
+  // 6. Hero sobre el pliegue en escritorio: H1, línea de pulso, los dos CTA y la
+  // zona de la mano y la mancuerna (50–93 % del alto y 18–86 % del ancho de la
+  // foto original) dentro de la ventana. Con movimiento (intro terminada y
+  // parallax de GSAP aplicado) y con reduced-motion.
+  console.log('\nhero above the fold');
+  for (const [width, height] of [[1440, 900], [1366, 768], [1280, 720]]) {
+    for (const reducedMotion of ['no-preference', 'reduce']) {
+      const context = await browser.newContext({ viewport: { width, height }, reducedMotion });
+      const page = await context.newPage();
+      await page.goto(`${server.url}/`, { waitUntil: 'load' });
+      if (reducedMotion === 'no-preference' && !(await motionReady(page))) fail(`fold ${width}x${height}: motion did not start`);
+      await page.waitForTimeout(1800); // intro CSS (≈1.4 s) terminada
+      const r = await page.evaluate(() => {
+        const box = (sel) => document.querySelector(sel).getBoundingClientRect();
+        const media = box('.hero-media');
+        const img = document.querySelector('.hero-media img');
+        const ir = img.getBoundingClientRect();
+        // object-fit: cover + object-position (lg+), sobre la caja ya transformada por GSAP
+        const scale = Math.max(ir.width / img.naturalWidth, ir.height / img.naturalHeight);
+        const cw = img.naturalWidth * scale;
+        const ch = img.naturalHeight * scale;
+        const [px, py] = getComputedStyle(img).objectPosition.split(' ').map((v) => parseFloat(v) / 100);
+        const left = ir.left + (ir.width - cw) * px;
+        const top = ir.top + (ir.height - ch) * py;
+        const subject = { top: top + ch * 0.5, bottom: top + ch * 0.93, left: left + cw * 0.18, right: left + cw * 0.86 };
+        return {
+          h1: box('.hero-title').bottom,
+          pulse: box('.hero-pulse').bottom,
+          lines: Math.round(box('.hero-title').height / parseFloat(getComputedStyle(document.querySelector('.hero-title')).fontSize) / 0.92),
+          ctas: Math.max(box('.hero .btn-primary').bottom, box('.hero .btn-outline-primary').bottom),
+          media: media.bottom,
+          subjectInFrame: subject.top >= media.top - 1 && subject.bottom <= media.bottom + 1 && subject.left >= media.left - 1 && subject.right <= media.right + 1,
+          subjectBottom: subject.bottom,
+        };
+      });
+      const tag = `fold ${width}x${height}${reducedMotion === 'reduce' ? ' reduced' : ''}`;
+      const over = Object.entries({ h1: r.h1, pulse: r.pulse, ctas: r.ctas, photo: r.media, subject: r.subjectBottom }).filter(([, bottom]) => bottom > height);
+      if (over.length) fail(`${tag}: below the fold: ${over.map(([k, v]) => `${k} ${Math.round(v)}px`).join(', ')}`);
+      if (r.lines !== 3) fail(`${tag}: H1 has ${r.lines} lines`);
+      if (!r.subjectInFrame) fail(`${tag}: hand + dumbbell not inside the photo crop`);
+      await page.screenshot({ path: `${out}/hero-${width}x${height}${reducedMotion === 'reduce' ? '-reduced' : ''}.png` });
+      console.log(`  ${tag}: CTAs ${Math.round(r.ctas)} · photo ${Math.round(r.media)} / ${height}`);
+      await context.close();
+    }
+  }
+
+  // 7. WhatsApp no tapa las tarjetas de precios: en cada paso del recorrido por
+  // Programs, o el botón no se ve (lo cubre la sección) o no se cruza con ninguna tarjeta.
+  console.log('\nwhatsapp vs pricing');
+  for (const [name, options] of [['mobile', DEVICES.mobile], ['narrow', DEVICES.narrow], ['1280x720', { viewport: { width: 1280, height: 720 } }]]) {
+    for (const reducedMotion of ['no-preference', 'reduce']) {
+      const context = await browser.newContext({ ...options, reducedMotion });
+      const page = await context.newPage();
+      await page.goto(`${server.url}/`, { waitUntil: 'load' });
+      if (reducedMotion === 'no-preference') await motionReady(page);
+      const [from, to] = await page.evaluate(() => {
+        const r = document.getElementById('programs').getBoundingClientRect();
+        return [r.top + scrollY - innerHeight, r.bottom + scrollY];
+      });
+      let covered = 0;
+      for (let y = Math.max(0, from); y <= to; y += 40) {
+        await page.evaluate((top) => window.scrollTo({ top, behavior: 'instant' }), y);
+        await page.waitForTimeout(40);
+        const hit = await page.evaluate(() => {
+          const button = document.querySelector('.whatsapp-float');
+          const b = button.getBoundingClientRect();
+          const top = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2);
+          if (!button.contains(top)) return null; // tapado por la sección: no se ve
+          const card = [...document.querySelectorAll('#programs .card')].find((c) => {
+            const r = c.getBoundingClientRect();
+            return r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top;
+          });
+          return card ? card.querySelector('h3').textContent : null;
+        });
+        if (hit) covered++;
+        if (hit && covered === 1) fail(`whatsapp ${name}${reducedMotion === 'reduce' ? ' reduced' : ''}: covers the "${hit}" card at scroll ${y}`);
+      }
+      if (!covered) console.log(`  ${name}${reducedMotion === 'reduce' ? ' reduced' : ''}: never over a pricing card`);
+      await context.close();
+    }
+  }
+
+  // 8. Cursor y táctil. Chromium con hasTouch emula pointer: coarse, así que en
+  // un móvil el anillo ni se crea. El caso difícil es el portátil táctil: puntero
+  // principal fino (el anillo existe) y pantalla táctil; se reproduce disparando
+  // PointerEvent con pointerType "touch" en un contexto de escritorio.
+  {
+    const mobile = await browser.newContext({ ...DEVICES.mobile });
+    const mpage = await mobile.newPage();
+    await mpage.goto(`${server.url}/`, { waitUntil: 'load' });
+    await mpage.touchscreen.tap(200, 400);
+    await mpage.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
+    await mpage.waitForFunction(() => document.documentElement.classList.contains('motion-ready'), null, { timeout: 8000 }).catch(() => fail('mobile: motion did not start after touch'));
+    await mpage.touchscreen.tap(200, 400);
+    await mpage.waitForTimeout(400);
+    if (await mpage.locator('.cursor').count()) fail('mobile: cursor ring created on a touch-only device');
+    await mobile.close();
+
+    const { context, page } = await open('desktop');
+    await motionReady(page);
+    await page.mouse.move(400, 300);
+    await page.waitForTimeout(300);
+    const ring = () => page.evaluate(() => document.querySelector('.cursor').classList.contains('is-visible'));
+    const withMouse = await ring();
+    const touch = (type, x, y) => page.evaluate(([t, cx, cy]) => {
+      const target = document.elementFromPoint(cx, cy);
+      target.dispatchEvent(new PointerEvent(t, { pointerType: 'touch', clientX: cx, clientY: cy, bubbles: true }));
+    }, [type, x, y]);
+    await touch('pointerdown', 640, 500);
+    await touch('pointermove', 660, 520);
+    const btn = await page.locator('.hero .btn-lg').first().boundingBox();
+    await touch('pointerover', btn.x + 20, btn.y + 20);
+    await touch('pointermove', btn.x + 20, btn.y + 20);
+    await page.waitForTimeout(500);
+    const afterTouch = await ring();
+    const magnet = await page.evaluate(() => getComputedStyle(document.querySelector('.hero .btn-lg')).transform);
+    if (!withMouse) fail('touch laptop: cursor ring does not follow the mouse');
+    if (afterTouch) fail('touch laptop: cursor ring visible after touch input');
+    if (magnet !== 'none' && magnet !== 'matrix(1, 0, 0, 1, 0, 0)') fail(`touch laptop: magnetic button moved with touch (${magnet})`);
+    console.log(`\ncursor on touch: ${!withMouse || afterTouch ? 'FAILED' : 'ok (phone never creates it, touch laptop hides it on touch)'}`);
+    await context.close();
   }
 
   writeFileSync(`${out}/aria-motion.yml`, aria.motion);

@@ -8,7 +8,11 @@
   right: map.get($spacers, 3);
   // Respeta el área segura de iPhone (barra de inicio) si es mayor que 1rem.
   bottom: max(#{map.get($spacers, 3)}, env(safe-area-inset-bottom));
-  z-index: $zindex-fixed;
+  // Por debajo del header sticky ($zindex-sticky: 1020) y de #programs (ver
+  // abajo): mientras las tarjetas de precios pasan bajo el botón, la sección
+  // lo tapa y el botón nunca cubre un precio ni un CTA. Solo CSS: funciona sin
+  // JS, con reduced-motion y en cualquier navegador.
+  z-index: $zindex-sticky - 5;
   display: grid;
   place-items: center;
   width: 3.5rem;  // 56px: área táctil por encima de los 48px recomendados
@@ -21,6 +25,12 @@
     color: $ink;
     background-color: tint-color($volt, 30%);
   }
+}
+
+// Programs, con fondo opaco, por encima del botón y por debajo del header.
+#programs {
+  z-index: $zindex-sticky - 4;
+  background-color: $body-bg-dark;
 }
 
 // En móvil el botón queda sobre el final de la página: el footer reserva
