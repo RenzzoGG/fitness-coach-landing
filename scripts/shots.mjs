@@ -374,6 +374,49 @@ try {
       await context.close();
     }
 
+    // 4f. Results + FAQ (M8): badges "Sample testimonial" y nota visibles en
+    // mitad de la entrada de las citas; citas partidas sin cambiar el texto;
+    // morph del icono del acordeón y título del FAQ sticky.
+    if (device === 'desktop') {
+      const { context, page } = await open(device);
+      await motionReady(page);
+      const opacityChain = (sel) =>
+        page.evaluate(
+          (s) =>
+            [...document.querySelectorAll(s)].map((el) => {
+              let o = 1;
+              for (let n = el; n && n.nodeType === 1; n = n.parentElement) o *= Number(getComputedStyle(n).opacity);
+              return Number(o.toFixed(2));
+            }),
+          sel,
+        );
+      await page.evaluate(() => window.scrollTo({ top: document.querySelector('.results-grid').getBoundingClientRect().top + scrollY - innerHeight * 0.6, behavior: 'instant' }));
+      await page.waitForTimeout(250);
+      await page.screenshot({ path: `${out}/desktop-results-entering.png` });
+      const badges = await opacityChain('.results-grid .badge');
+      const note = await opacityChain('#results > .container > p.small');
+      const words = await page.evaluate(() => document.querySelectorAll('.testimonial-quote p > *').length);
+      if (badges.length !== 3 || badges.some((o) => o !== 1) || note[0] !== 1) fail(`results: honesty labels not fully visible mid-animation (badges ${badges}, note ${note})`);
+      if (words < 30) fail(`results: quotes not split into words (${words})`);
+      await page.waitForTimeout(1500);
+      const quote = await page.evaluate(() => document.querySelector('.testimonial-quote p').textContent.replace(/\s+/g, ' ').trim());
+      if (!quote.startsWith('“The weekly check-ins are what made it stick.')) fail(`results: quote text changed: ${quote}`);
+      await page.locator('#faq').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(1200);
+      const items = await opacityChain('#faq-accordion .accordion-item');
+      if (items.some((o) => o !== 1)) fail(`faq: items not visible after entering (${items})`);
+      await page.locator('[data-bs-target="#faq-2"]').click();
+      await page.waitForTimeout(600);
+      const icons = await page.evaluate(() => ['#faq-1', '#faq-2'].map((id) => getComputedStyle(document.querySelector(`[data-bs-target="${id}"]`), '::before').transform));
+      if (icons[0] !== 'matrix(1, 0, 0, 1, 0, -5)' && !icons[0].startsWith('matrix(1, 0, 0, 1')) fail(`faq: closed icon is not a plus (${icons[0]})`);
+      if (!icons[1].startsWith('matrix(0, ')) fail(`faq: open icon did not morph to minus (${icons[1]})`);
+      const sticky = await page.evaluate(() => getComputedStyle(document.querySelector('.faq-intro')).position);
+      if (sticky !== 'sticky') fail(`faq: intro position is ${sticky}`);
+      await page.screenshot({ path: `${out}/desktop-faq-open.png` });
+      console.log(`  results + faq: ok (${words} words, badges visible mid-animation)`);
+      await context.close();
+    }
+
     // 5. Sin JS
     if (device === 'mobile') {
       const { context, page } = await open(device, { javaScriptEnabled: false });

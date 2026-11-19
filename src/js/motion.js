@@ -15,6 +15,7 @@ import { setupHero } from './motion/hero.js';
 import { setupAbout } from './motion/about.js';
 import { setupPrograms } from './motion/programs.js';
 import { setupHow } from './motion/how.js';
+import { setupResultsFaq } from './motion/results-faq.js';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -33,7 +34,7 @@ const QUERIES = {
 // para crear animaciones más tarde dentro del mismo contexto (context.add). Se llaman dentro del
 // contexto de matchMedia, así que revert() deshace sus tweens y ScrollTriggers;
 // el cleanup devuelto se encarga de lo que GSAP no conoce (listeners, nodos creados).
-const SECTIONS = [setupGlobal, setupHero, setupAbout, setupPrograms, setupHow];
+const SECTIONS = [setupGlobal, setupHero, setupAbout, setupPrograms, setupHow, setupResultsFaq];
 
 let mm = null;
 

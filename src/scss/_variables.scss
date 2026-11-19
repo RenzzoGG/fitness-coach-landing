@@ -178,7 +178,10 @@ $accordion-button-active-color:    $volt;
 $accordion-icon-transform:         none;
 $accordion-icon-color-dark:        $chalk;
 $accordion-icon-active-color-dark: $volt;
-$accordion-button-icon-dark:        url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='#{$accordion-icon-color-dark}' stroke-width='1.75' stroke-linecap='round'><path d='M8 3v10M3 8h10'/></svg>");
+// M8: el icono de Bootstrap (::after) es solo la barra horizontal en los dos
+// estados; la vertical es un ::before propio que gira y se colapsa al abrir
+// (morph de + a −, components/_faq.scss). Un background-image no se puede animar.
+$accordion-button-icon-dark:        url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='#{$accordion-icon-color-dark}' stroke-width='1.75' stroke-linecap='round'><path d='M3 8h10'/></svg>");
 $accordion-button-active-icon-dark: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='#{$accordion-icon-active-color-dark}' stroke-width='1.75' stroke-linecap='round'><path d='M3 8h10'/></svg>");
 
 $badge-font-weight:   500;

@@ -13,3 +13,27 @@
     top: 7rem;
   }
 }
+
+// Morph del icono (M8): la barra horizontal es el ::after de Bootstrap
+// ($accordion-button-icon-dark); la vertical, este ::before, centrado sobre ella
+// con las mismas variables CSS del acordeón. Al abrir gira 90° y se colapsa:
+// el + se convierte en −. Sin movimiento, el cambio es instantáneo.
+.accordion-button::before {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--#{$prefix}accordion-btn-padding-x) + var(--#{$prefix}accordion-btn-icon-width) * .5 - .0625rem);
+  width: .125rem; // ≈ trazo de 1.75 en un icono de 16 a 1.25rem
+  height: calc(var(--#{$prefix}accordion-btn-icon-width) * .625); // 10/16 del icono
+  content: "";
+  background-color: currentcolor;
+  border-radius: 1px;
+  transform: translateY(-50%);
+
+  @include motion {
+    transition: transform .35s cubic-bezier(.65, 0, .35, 1);
+  }
+}
+
+.accordion-button:not(.collapsed)::before {
+  transform: translateY(-50%) rotate(90deg) scaleY(0);
+}

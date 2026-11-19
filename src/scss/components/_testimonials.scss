@@ -42,3 +42,30 @@
     margin-top: 6rem;
   }
 }
+
+// Citas como tipografía (M8): comilla gigante en Volt tras la cita, como en
+// una revista. `content: "“" / ""` da un texto alternativo vacío: el lector de
+// pantalla no la lee (la cita ya trae sus comillas). La primera línea es el
+// respaldo para navegadores sin esa sintaxis.
+.testimonial-quote {
+  position: relative;
+
+  &::before {
+    position: absolute;
+    top: -2.75rem;
+    right: -.5rem;
+    z-index: -1;
+    font-size: 9rem;
+    line-height: 1;
+    color: $volt;
+    pointer-events: none;
+    content: "“";
+    content: "“" / "";
+    opacity: .14;
+  }
+}
+
+// La comilla va detrás del texto (z-index: -1) pero sobre el fondo de la tarjeta.
+.results-grid .card {
+  isolation: isolate;
+}
