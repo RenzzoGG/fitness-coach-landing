@@ -153,3 +153,72 @@
   margin-top: .125rem;
   color: $volt;
 }
+
+// -----------------------------------------------------------------------------
+// Movimiento (M6)
+// -----------------------------------------------------------------------------
+
+// En el reparto de cartas la destacada llega la última y debe quedar delante.
+.pricing-card-featured {
+  z-index: 1;
+}
+
+// Contador de precios (motion/programs.js): con .has-counter los dos valores
+// reales se vuelven transparentes (siguen en el árbol de accesibilidad, el
+// visible con visibility: visible) y se muestra el número animado, aria-hidden,
+// en la misma celda del grid: el ancho no cambia mientras cuenta.
+.price-amount.has-counter {
+  > [data-period] {
+    opacity: 0;
+    animation: none;
+  }
+
+  > .price-counter {
+    grid-area: 1 / 1;
+    font-variant-numeric: tabular-nums; // los dígitos no bailan al contar
+  }
+}
+
+// Brillo que recorre el borde de la destacada: un conic-gradient cuyo ángulo
+// (--border-angle) se anima. Hace falta @property: sin registrar el tipo
+// <angle>, el navegador no sabe interpolar una variable y saltaría de golpe.
+// La máscara deja ver el gradiente solo en el anillo del borde (padding = grosor).
+// Solo con .motion-ready, como el marquee: es una animación continua (repinta)
+// y no debe correr durante la carga; el interruptor Motion la detiene.
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.motion-ready .pricing-card-featured::before {
+  position: absolute;
+  inset: calc(-1 * var(--#{$prefix}card-border-width));
+  padding: var(--#{$prefix}card-border-width);
+  pointer-events: none;
+  content: "";
+  background: conic-gradient(from var(--border-angle), transparent 0 72%, $chalk 84%, transparent 96%);
+  border-radius: inherit;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: border-spin 5s linear infinite;
+}
+
+@keyframes border-spin {
+  to { --border-angle: 360deg; }
+}
+
+// Señal que viaja del botón del plan al formulario (nodo temporal del chunk).
+.plan-signal {
+  position: fixed;
+  z-index: $zindex-fixed;
+  height: 2.5rem;
+  color: $volt;
+  pointer-events: none;
+  translate: 0 -50%;
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}

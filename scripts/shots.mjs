@@ -281,6 +281,49 @@ try {
       await context.close();
     }
 
+    // 4d. Programs (M6): el cambio de precios funciona sin el chunk (petición
+    // bloqueada) y con él (contador); reparto de cartas, borde y señal del plan.
+    if (device === 'desktop') {
+      const visiblePrice = (page) =>
+        page.evaluate(() => [...document.querySelectorAll('#programs .price-amount [data-period]')].filter((s) => getComputedStyle(s).visibility === 'visible').map((s) => s.textContent).join(' '));
+      {
+        const { context, page } = await open(device);
+        await page.route(MOTION_CHUNK, (route) => route.abort());
+        await page.mouse.move(5, 5);
+        await page.locator('#billing-switch').scrollIntoViewIfNeeded();
+        await page.locator('#billing-switch').check();
+        await page.waitForTimeout(800);
+        const prices = await visiblePrice(page);
+        if (prices !== '$63 $119 $239') fail(`programs without chunk: visible prices "${prices}"`);
+        await context.close();
+      }
+      const { context, page } = await open(device);
+      await motionReady(page);
+      await page.evaluate(() => window.scrollTo({ top: document.querySelector('#programs .row-cols-lg-3').getBoundingClientRect().top + scrollY - innerHeight * 0.5, behavior: 'instant' }));
+      await page.waitForTimeout(400);
+      await page.screenshot({ path: `${out}/desktop-programs-deal.png` }); // a mitad del reparto
+      await page.waitForTimeout(1400);
+      const dealt = await page.evaluate(() => [...document.querySelectorAll('#programs .card')].map((c) => `${getComputedStyle(c).opacity}|${getComputedStyle(c).transform}`));
+      if (dealt.some((d) => !/^1\|(none|matrix\(1, 0, 0, 1, 0, 0\))$/.test(d))) fail(`programs: cards not settled after dealing (${dealt.join(' ; ')})`);
+      const shine = await page.evaluate(() => getComputedStyle(document.querySelector('.pricing-card-featured'), '::before').animationName);
+      if (shine !== 'border-spin') fail(`programs: featured border shine is "${shine}"`);
+      await page.locator('#billing-switch').check();
+      await page.waitForTimeout(250);
+      const counting = await page.evaluate(() => [...document.querySelectorAll('.price-counter')].map((c) => c.textContent).join(' '));
+      await page.waitForTimeout(900);
+      const counters = await page.evaluate(() => [...document.querySelectorAll('.price-counter')].map((c) => c.textContent).join(' '));
+      const prices = await visiblePrice(page);
+      if (counters !== '$63 $119 $239' || prices !== '$63 $119 $239') fail(`programs: counters "${counters}", accessible prices "${prices}"`);
+      await page.locator('#programs [data-plan="elite"]').click();
+      await page.waitForTimeout(150);
+      const signal = await page.locator('.plan-signal').count();
+      await page.waitForTimeout(1500);
+      const plan = await page.evaluate(() => [document.querySelector('#book form').elements.plan.value, document.querySelectorAll('.plan-signal').length]);
+      if (signal !== 1 || plan[0] !== 'elite' || plan[1] !== 0) fail(`programs: plan signal ${signal}, plan "${plan[0]}", leftover signals ${plan[1]}`);
+      console.log(`  programs: ok (mid-count: ${counting})`);
+      await context.close();
+    }
+
     // 5. Sin JS
     if (device === 'mobile') {
       const { context, page } = await open(device, { javaScriptEnabled: false });

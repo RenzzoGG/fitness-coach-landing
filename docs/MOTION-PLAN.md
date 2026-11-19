@@ -221,7 +221,7 @@ Cada fase cierra con: `npm run build`, `check`, `verify`, `size`, capturas Playw
 | **M3 · Capa global** ✔ | Barra de progreso (CSS scroll-driven), navbar ocultable + indicador de sección, cursor, botones magnéticos, rejilla viva | Teclado: navbar visible con foco; cursor ausente en emulación táctil |
 | **M4 · Hero + marquee** ✔ | Intro CSS, línea de pulso, parallax de foto y titular, marquee con velocidad de scroll y botón de pausa | **LCP y CLS** en Lighthouse móvil frente a la línea base; decisión sobre máscara inicial del H1 |
 | **M5 · About** ✔ | Número 01, revelado de imagen, titular que se lee con scroll (SplitText), iconos dibujados, spotlight | Árbol de accesibilidad del titular partido = texto original |
-| **M6 · Programs** | Reparto de cartas, contador de precios, borde cónico, pulso hacia el formulario | El cambio de precios sigue funcionando sin el chunk (bloqueando la petición en Playwright) |
+| **M6 · Programs** ✔ | Reparto de cartas, contador de precios, borde cónico, pulso hacia el formulario | El cambio de precios sigue funcionando sin el chunk (bloqueando la petición en Playwright) |
 | **M7 · How it works** | Pin + scroll horizontal (lg+) con `containerAnimation`, línea de pulso, números que se rellenan; timeline vertical en móvil | Captura a mitad del pin; el orden de lectura y de Tab sigue siendo 01→04 |
 | **M8 · Results + FAQ** | Citas tipográficas, entrada por palabras, parallax diferencial; FAQ sticky y morph del icono | Badge "Sample testimonial" visible en todas las capturas intermedias |
 | **M9 · Book + footer + WhatsApp** | Titular, líneas de campos, animación de éxito, wordmark que se rellena, entrada de WhatsApp | Envío con datos válidos e inválidos en Playwright; aviso de marca ficticia intacto |
@@ -305,3 +305,14 @@ Texto original de las decisiones:
 - **Spotlight** (`.spotlight` en `_base.scss`, reutilizable): `::after` con `radial-gradient` en `--mx`/`--my`, `z-index: -1` dentro de `isolation: isolate` (queda sobre el fondo de la tarjeta y bajo el texto). Solo `hover: hover` + `pointer: fine` y bajo `@include motion`.
 - **Pesos:** CSS 116.8 KB / 19.3 KB gzip · crítico 14.9 KB · movimiento 127.2 KB / 49.7 KB gzip.
 - **Lighthouse (mediana de 5):** móvil 100 · 100 · 100 · 100 (LCP 907 ms, TBT 33 ms, CLS 0); escritorio 100 en todo.
+
+### M6 · Programs ✔
+- **Reparto de cartas** (`src/js/motion/programs.js`): en lg+ las tres tarjetas salen apiladas en el centro de la fila (`x` calculado con `getBoundingClientRect`), 220 px más abajo y giradas ±9°, y se abren a su sitio; `stagger` como función para el orden 0 → 2 → 1 (la destacada al final, con `z-index: 1`). En móvil, entrada simple: en columna, "repartir" no se entiende. Las columnas pierden `.reveal`.
+- **Contador de precios:** un `<span class="price-counter" aria-hidden>` en la misma celda del grid que los dos precios reales, que con `.has-counter` pasan a `opacity: 0` (el visible conserva `visibility: visible`, así que el lector de pantalla sigue leyendo el precio correcto y el ancho no cambia). Cuenta con `gsap.to` sobre un objeto `{ value }` y `tabular-nums`. El listener del chunk corre después del de `pricing-toggle.js` (registrado antes), así que lee el `data-billing` nuevo. **Sin el chunk** (petición bloqueada en `shots`) el cambio CSS sigue funcionando.
+- **"Save 20%"** hace un pulso de escala (yoyo) al activar Annual.
+- **Borde de la destacada:** `conic-gradient` con el ángulo en una variable registrada con `@property --border-angle` (sin registrar, una variable no se interpola), recortado al anillo del borde con `mask` + `mask-composite: exclude`. Solo con `.motion-ready`, por lo mismo que el marquee: es una animación continua que repinta.
+- **Spotlight** en las tres tarjetas (no solo en la destacada: con una sola, el gesto parecía un error).
+- **Señal al elegir plan:** un nodo temporal con la línea de pulso del logo sale del botón, se estira y cae hacia el formulario mientras el scroll suave nativo lleva a `#book`; se borra al terminar. El plan sigue quedando elegido en el `<select>` (lo hace `form-validation.js`).
+- **`check-classes` como red de seguridad:** una clase usada solo como gancho de JS (`pricing-card`) falla la comprobación; se seleccionan con `#programs .card`.
+- **Pesos:** CSS 117.8 KB / 19.5 KB gzip (quedan 0.5 KB: M7–M9 tendrán que recortar) · crítico 14.9 KB · movimiento 129.6 KB / 50.5 KB gzip.
+- **Lighthouse (mediana de 5):** móvil 100 · 100 · 100 · 100 (LCP 1025 ms, TBT 17 ms, CLS 0); escritorio 100 en todo.
