@@ -44,7 +44,8 @@ function credentials() {
 }
 
 // Tarjetas: entran escalonadas; con ellas se dibuja el icono (stroke-dashoffset
-// con pathLength="1" en el HTML) y crece la línea Volt superior (--line, que el
+// con pathLength="1" en el HTML; autoRound: false porque GSAP redondea
+// los px a enteros y el trazo, que mide 1, saltaría sin dibujarse) y crece la línea Volt superior (--line, que el
 // CSS usa en un scaleX). Si ya estaban en pantalla, solo se enciende la línea.
 function valueCards() {
   const cards = gsap.utils.toArray('.value-card');
@@ -56,7 +57,7 @@ function valueCards() {
   }
   gsap
     .timeline({ scrollTrigger: { trigger: cards[0], start: 'top 85%', once: true } })
-    .fromTo(icons, { strokeDasharray: '1 2', strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.9, ease: 'power2.inOut', stagger: 0.12 }, 0.25)
+    .fromTo(icons, { strokeDasharray: '1 2', strokeDashoffset: 1 }, { strokeDashoffset: 0, autoRound: false, duration: 0.9, ease: 'power2.inOut', stagger: 0.12 }, 0.25)
     .fromTo(cards, { '--line': 0 }, { '--line': 1, duration: 0.7, ease: 'power3.inOut', stagger: 0.12 }, 0.35);
 }
 

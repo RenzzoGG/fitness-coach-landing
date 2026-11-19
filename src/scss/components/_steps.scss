@@ -10,11 +10,13 @@
   padding-top: map.get($spacers, 4);
   border-top: 1px solid $line;
 
+  // Ancho: 3rem de base y, con --fill (0–1, lo anima el chunk en M7), hasta el
+  // 100 %. Es un pseudo-elemento absoluto: cambiar su ancho no mueve nada más.
   &::before {
     position: absolute;
     top: -1px;
     left: 0;
-    width: 3rem;
+    width: calc(3rem + (100% - 3rem) * var(--fill, 0));
     height: 3px;
     content: "";
     background-color: $volt;
@@ -24,6 +26,7 @@
 // El número es decorativo (aria-hidden): el orden ya lo comunica la <ol>.
 .step-number {
   display: block;
+  width: fit-content; // mide lo que el número (la línea de pulso de M7 late justo después)
   margin-bottom: map.get($spacers, 3);
   font-family: $headings-font-family;
   font-size: clamp(4rem, 7vw, 6.5rem);
@@ -31,4 +34,66 @@
   line-height: .85;
   color: transparent; // contorno Volt con .text-outline-volt (Utility API)
   letter-spacing: -.05em;
+}
+
+// -----------------------------------------------------------------------------
+// Movimiento (M7, motion/how.js)
+// -----------------------------------------------------------------------------
+
+// Paso "encendido" al cruzar el centro: el número con contorno se rellena.
+.step.is-lit .step-number {
+  color: $volt;
+}
+
+.step-number {
+  @include motion {
+    transition: color .4s ease;
+  }
+}
+
+// lg+: el chunk añade .how-horizontal a la sección y fija .how-pin. Los pasos
+// pasan a paneles anchos en una sola fila; la pista sobresale del container
+// hacia la derecha y .how-pin la recorta en el borde de la ventana (clip, no
+// hidden: así no se crea un contenedor de scroll).
+.how-pin {
+  overflow-x: clip;
+}
+
+.how-track {
+  position: relative;
+}
+
+.how-horizontal {
+  .how-track ol {
+    flex-wrap: nowrap;
+
+    > .col {
+      width: min(34rem, 40vw);
+    }
+  }
+
+  .step-number {
+    font-size: clamp(7rem, 11vw, 11rem);
+  }
+}
+
+// Línea de pulso que recorre los paneles (la crea el chunk; decorativa).
+.how-signal {
+  position: absolute;
+  // A media altura del número: padding del paso + la mitad del número
+  // (font-size × line-height .85 / 2) − la mitad del SVG (5rem / 2).
+  top: calc(#{map.get($spacers, 4)} + clamp(7rem, 11vw, 11rem) * .425 - 2.5rem);
+  left: 0;
+  z-index: -1;
+  height: 5rem;
+  overflow: visible;
+
+  path {
+    fill: none;
+    stroke: $volt;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    opacity: .7;
+  }
 }

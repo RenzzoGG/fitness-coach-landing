@@ -324,6 +324,56 @@ try {
       await context.close();
     }
 
+    // 4e. How it works (M7): en escritorio, pin + scroll horizontal (captura a
+    // mitad del pin, pista desplazada, pasos encendidos); en móvil, sin pin y
+    // los cuatro pasos encendidos al pasar. En ambos, el orden del DOM es 01→04.
+    if (device !== 'narrow') {
+      const { context, page } = await open(device);
+      await motionReady(page);
+      const order = await page.evaluate(() => [...document.querySelectorAll('#how ol > li h3')].map((h) => h.textContent).join(' → '));
+      if (order !== 'Free call → Assessment → Your plan → Weekly check-ins') fail(`${device}/how: step order is ${order}`);
+      const state = () =>
+        page.evaluate(() => ({
+          pinned: Boolean(document.querySelector('#how .pin-spacer')),
+          x: new DOMMatrix(getComputedStyle(document.querySelector('#how ol')).transform).m41,
+          lit: document.querySelectorAll('#how .step.is-lit').length,
+          top: Math.round(document.querySelector('.how-pin').getBoundingClientRect().top),
+        }));
+      if (device === 'desktop') {
+        // Inicio del pin: centro de .how-pin en el centro de la ventana; se avanza por la mitad del recorrido.
+        const start = await page.evaluate(() => {
+          const r = document.querySelector('.how-pin').getBoundingClientRect();
+          return r.top + scrollY + r.height / 2 - innerHeight / 2;
+        });
+        const spacer = await page.evaluate(() => document.querySelector('#how .pin-spacer')?.offsetHeight - document.querySelector('.how-pin').offsetHeight);
+        await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), start + 10);
+        await page.waitForTimeout(400);
+        const first = await state();
+        await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), start + spacer * 0.55);
+        await page.waitForTimeout(1200);
+        const mid = await state();
+        await page.screenshot({ path: `${out}/desktop-how-pin.png` });
+        if (!mid.pinned || !(spacer > 0)) fail(`desktop/how: section not pinned (spacer ${spacer})`);
+        if (Math.abs(mid.top - first.top) > 2) fail(`desktop/how: pinned block moved vertically (${first.top} → ${mid.top})`);
+        if (!(mid.x < -100)) fail(`desktop/how: track did not move horizontally (x ${mid.x})`);
+        if (mid.lit < 1 || mid.lit > 3) fail(`desktop/how: ${mid.lit} steps lit at mid-pin`);
+        if (await overflow(page)) fail('desktop/how: horizontal scroll during pin');
+        await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), start + spacer + 50);
+        await page.waitForTimeout(1200);
+        const end = await state();
+        if (end.lit !== 4) fail(`desktop/how: ${end.lit} steps lit after the pin`);
+        console.log(`  how: ok (pin ${spacer}px, mid x ${Math.round(mid.x)}px, lit ${mid.lit}/4)`);
+      } else {
+        await page.evaluate(() => window.scrollTo({ top: document.querySelector('#how .btn-lg').getBoundingClientRect().top + scrollY - innerHeight * 0.3, behavior: 'instant' }));
+        await page.waitForTimeout(1200);
+        const end = await state();
+        if (end.pinned) fail('mobile/how: section is pinned on mobile');
+        if (end.lit !== 4) fail(`mobile/how: ${end.lit} steps lit after scrolling past`);
+        console.log(`  how: ok (no pin, lit ${end.lit}/4)`);
+      }
+      await context.close();
+    }
+
     // 5. Sin JS
     if (device === 'mobile') {
       const { context, page } = await open(device, { javaScriptEnabled: false });
