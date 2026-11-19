@@ -18,10 +18,6 @@ h1, h2, h3, h4,
   text-wrap: balance;
 }
 
-.display-1, .display-2, .display-3, .display-4, .display-5, .display-6 {
-  letter-spacing: -.04em;
-}
-
 ::selection {
   color: $ink;
   background-color: $volt;

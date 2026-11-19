@@ -4,7 +4,10 @@
 // Va DESPUÉS de bootstrap/scss/variables (el mapa ya existe) y ANTES de
 // bootstrap/scss/maps (que deriva de él $theme-colors-rgb, y de ahí salen
 // .btn-*, .bg-*, .text-*, .border-*, .link-*, .text-bg-*).
-// Cada color quitado elimina todas esas clases. No usamos info, warning ni light.
+// Cada color quitado elimina todas esas clases. Solo usamos primary y secondary.
+// success y danger se quitan del MAPA (M6, para hacer sitio a M7–M9) pero sus
+// VARIABLES ($success, $danger) siguen: la validación del formulario las lee
+// directamente ($form-valid-color, $form-invalid-color-dark), no del mapa.
 // =============================================================================
 @use "sass:map"; // módulo moderno: map.merge/map.remove (las versiones globales están obsoletas)
-$theme-colors: map.remove($theme-colors, "info", "warning", "light");
+$theme-colors: map.remove($theme-colors, "info", "warning", "light", "success", "danger", "dark");

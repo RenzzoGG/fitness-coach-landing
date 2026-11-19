@@ -81,9 +81,9 @@ $h1-font-size:           $font-size-base * 3;    // RFS lo reduce en móvil
 $h2-font-size:           $font-size-base * 3;    // M2: titulares de sección tipo cartel (RFS los reduce en móvil)
 $h3-font-size:           $font-size-base * 1.5;
 
-$display-font-family:    $headings-font-family;
-$display-font-weight:    700;
-$display-line-height:    1;
+// Sin .display-1…6: los titulares de cartel usan clamp() en su componente
+// (hero, footer), no RFS. Un mapa vacío hace que _type.scss no genere ninguna.
+$display-font-sizes:     ();
 
 // Sin subrayado en la navegación; en el texto corrido se subraya con una clase propia (F2).
 $link-decoration:        none;

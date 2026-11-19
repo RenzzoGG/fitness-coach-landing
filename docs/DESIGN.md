@@ -74,7 +74,7 @@ Reglas de uso:
 // 3. Configuración de Bootstrap
 @import "bootstrap/scss/variables";
 @import "bootstrap/scss/variables-dark";
-@import "theme-colors";                // recorta $theme-colors (info, warning, light) antes de maps
+@import "theme-colors";                // recorta $theme-colors (deja primary y secondary) antes de maps
 @import "form-states";                 // quita el estado "valid" (solo marcamos errores)
 @import "bootstrap/scss/maps";
 @import "bootstrap/scss/mixins";
@@ -119,7 +119,7 @@ Reglas de uso:
 
 **Módulos excluidos** (no se compilan, así que no pesan): `modal`, `dropdown`, `tooltip`, `popover`, `carousel`, `toasts`, `offcanvas`, `tables`, `pagination`, `breadcrumb`, `list-group`, `progress`, `spinners`, `alert`, `close`, `button-group`, `placeholders`. Tampoco los submódulos de forms `form-range`, `floating-labels` ni `input-group`.
 
-**Colores de tema recortados** (`_theme-colors.scss`): `map.remove($theme-colors, "info", "warning", "light")` después de `variables` y antes de `maps`. `maps` deriva de `$theme-colors` el mapa `$theme-colors-rgb`, del que salen `.btn-*`, `.bg-*`, `.text-*`, `.border-*`, `.link-*` y `.text-bg-*`, así que cada color quitado elimina todas esas clases.
+**Colores de tema recortados** (`_theme-colors.scss`): `map.remove($theme-colors, "info", "warning", "light", "success", "danger", "dark")` (los tres últimos, en M6 del rediseño: las variables `$success`/`$danger` se conservan porque la validación del formulario las usa directamente; además `$display-font-sizes: ()` elimina `.display-1…6`, sin uso) después de `variables` y antes de `maps`. `maps` deriva de `$theme-colors` el mapa `$theme-colors-rgb`, del que salen `.btn-*`, `.bg-*`, `.text-*`, `.border-*`, `.link-*` y `.text-bg-*`, así que cada color quitado elimina todas esas clases.
 
 ### 5.3 Modo oscuro: la vía oficial de la 5.3
 - Ponemos `<html data-bs-theme="dark">` y sobrescribimos las variables `*-dark` de Bootstrap: `$body-bg-dark: $ink`, `$body-color-dark: $chalk`, `$body-secondary-color-dark: $steel`, `$body-tertiary-bg-dark: $graphite`, `$border-color-dark: $line`, `$headings-color-dark: $chalk`, `$link-color-dark: $volt`, `$form-invalid-color-dark: $danger`, `$form-valid-color-dark: $volt`, etc.
