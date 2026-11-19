@@ -17,14 +17,21 @@ Built with **Bootstrap 5.3 customized through Sass** and **vanilla JavaScript**,
 - Dark mode through Bootstrap 5.3's official `data-bs-theme="dark"` and the `*-dark` variables, not by overriding components.
 - The only Bootstrap JavaScript is the Collapse plugin (navbar and FAQ accordion), imported from Bootstrap's ES module source so the bundle can be tree-shaken.
 
-**Interactions in vanilla JS (14.3 KB minified in total, Collapse included)**
+**Motion (GSAP, `motion-redesign` branch)**
+- Concept "Signal": the logo's pulse line runs through the page. It draws itself in the hero, beats along the pinned horizontal "How it works" steps, travels to the form when you pick a plan, and ends as a check mark when the demo form is sent.
+- GSAP + ScrollTrigger + SplitText ship in a **separate deferred chunk** (51.7 KB gzip). It is fetched on the first interaction, and never with `prefers-reduced-motion: reduce` or with the on-page **Motion** switch turned off (WCAG 2.2.2). The critical bundle stays under 15 KB.
+- Everything is progressive enhancement: the hero intro, marquee, focus lines and FAQ icon morph are CSS, and every section is complete and readable without the chunk. Turning Motion off reverts every tween, pin and text split.
+- Split text keeps its accessible name, the "Sample testimonial" badges never animate, the native cursor stays visible, and nothing hides content the visitor is already looking at.
+- Checked with Playwright (`npm run shots`: per-section behavior, keyboard walk, accessibility tree with and without motion, no horizontal scroll at 320 px) and Lighthouse (`npm run lh`, median of 5): 100/100/100/100 on mobile and desktop.
+
+**Interactions in vanilla JS (critical bundle 14.9 KB minified, Collapse included)**
 - Monthly/annual pricing toggle: JS only flips one `data-*` attribute; CSS keyframes animate the price swap, staggered per card.
 - Booking form validated with the native Constraint Validation API and Bootstrap's validation styles: inline errors, focus on the first error, and messages linked with `aria-describedby`.
 - Scroll reveal with `IntersectionObserver`, plus a CSS failsafe so content never stays hidden if the script fails to load.
 - Every animation respects `prefers-reduced-motion`.
 
 **Performance**
-- CSS 122.6 KB minified / **19.3 KB gzip**, compared with 231.8 KB / 30.9 KB for the full Bootstrap build.
+- CSS 114.4 KB minified / **19.5 KB gzip** (motion styles included), compared with 231.8 KB / 30.9 KB for the full Bootstrap build.
 - Responsive images (AVIF, WebP and JPEG at 480/800/1200 px, already cropped to their 4:5 display aspect). A phone downloads 34 KB of images instead of 237 KB (−85%).
 - Self-hosted fonts (WOFF2, Latin subset, `font-display: swap`, critical files preloaded). No third-party requests.
 - Content-hashed filenames (e.g. `main.50aa78f3.css`) for safe long-term caching behind a CDN.
@@ -43,11 +50,12 @@ Built with **Bootstrap 5.3 customized through Sass** and **vanilla JavaScript**,
 | | |
 |---|---|
 | UI | Bootstrap 5.3.8 (Sass source), custom SCSS |
-| JavaScript | Vanilla ES modules, bundled with esbuild |
+| JavaScript | Vanilla ES modules, bundled with esbuild (code splitting) |
+| Motion | GSAP 3.15 (ScrollTrigger, SplitText) in a deferred chunk |
 | CSS build | Dart Sass, PostCSS + Autoprefixer |
 | Images | sharp (responsive variants, icons, Open Graph image) |
 | Fonts | Space Grotesk and DM Sans via Fontsource, self-hosted |
-| Validation | html-validate, plus custom Node scripts |
+| Validation | html-validate, Playwright, Lighthouse, plus custom Node scripts |
 
 ## Getting started
 
@@ -66,6 +74,8 @@ npm run preview   # serve the production build → http://localhost:4173
 | `npm run verify` | Validates `dist/index.html` and audits the production build |
 | `npm run check` | Fails if an HTML class has no matching CSS rule |
 | `npm run size` | Prints CSS and JS size, minified and gzipped |
+| `npm run shots` | Playwright screenshots and behavior checks (desktop, mobile, 320 px, reduced motion, no JS) → `.cache/shots/` |
+| `npm run lh` | Lighthouse mobile and desktop, median of 5 runs, served like production → `.cache/lighthouse/` |
 | `npm run og` | Regenerates the 1200×630 Open Graph image |
 
 The canonical domain is read from `SITE_URL` (default `https://pulse.renzzogg.com`):
@@ -88,12 +98,13 @@ Deployed on [Railway](https://railway.com) with Railpack, behind Cloudflare.
 src/
   index.html            page markup (asset paths without hashes)
   scss/                 _variables.scss (tokens) → selective Bootstrap imports → components/
-  js/                   main.js + one module per feature
+  js/                   main.js + one module per feature; motion.js + motion/ (deferred GSAP chunk)
   img/                  source photos
   static/               favicon, OG image, manifest, robots.txt
 scripts/                build, dev server, images, OG image, hashing, compression, checks
 Caddyfile               production server config (compression, cache headers)
 docs/DESIGN.md          design decisions and phase plan (Spanish)
+docs/MOTION-PLAN.md     motion redesign plan and phase log (Spanish)
 docs/CREDITS.md         photo and icon credits
 ```
 

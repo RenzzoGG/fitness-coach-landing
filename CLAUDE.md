@@ -41,6 +41,8 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 - Vanilla, módulos ES en `src/js/`, un módulo por funcionalidad, inicializados desde `main.js`.
 - **Dos bundles** (esbuild `--splitting`): el **crítico** (`main.js`) y el **chunk de movimiento** (`motion.js` + `src/js/motion/`), que solo pide `motion-loader.js` con `import()` dinámico en la **primera interacción** (`scroll`, `pointermove`, `pointerdown`, `keydown`, `touchstart`; desde M4, medido: con `load` + `requestIdleCallback` el TBT móvil subía a 219 ms), y **nunca** con `prefers-reduced-motion: reduce` ni con el interruptor Motion apagado. GSAP solo se importa desde el chunk.
 - Toda animación GSAP se crea dentro del `gsap.matchMedia()` de `motion.js` (así `stop()` la revierte). El contenido nunca depende del chunk para verse.
+- Un módulo por sección en `src/js/motion/` con firma `(conditions, context) => cleanup`. Usa `motion/utils.js`: `enter()` para entradas (no oculta lo que ya está en pantalla) y `afterFonts(context, fn)` para SplitText. Lo creado en eventos o callbacks (fuera del contexto) lo deshace el cleanup; `shots` comprueba que apagar Motion no deja nada.
+- `strokeDashoffset` con `pathLength="1"` necesita `autoRound: false` (GSAP redondea los px a enteros).
 - CSS de movimiento: siempre con `@include motion { … }` (`_mixins.scss`), que combina `prefers-reduced-motion: no-preference` y el interruptor `data-motion="off"`.
 - Mejora progresiva: el contenido debe verse y entenderse sin JS (precios mensuales en el HTML, secciones visibles).
 - Animaciones: respetar siempre `prefers-reduced-motion`.

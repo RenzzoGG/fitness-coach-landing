@@ -225,7 +225,7 @@ Cada fase cierra con: `npm run build`, `check`, `verify`, `size`, capturas Playw
 | **M7 · How it works** ✔ | Pin + scroll horizontal (lg+) con `containerAnimation`, línea de pulso, números que se rellenan; timeline vertical en móvil | Captura a mitad del pin; el orden de lectura y de Tab sigue siendo 01→04 |
 | **M8 · Results + FAQ** ✔ | Citas tipográficas, entrada por palabras, parallax diferencial; FAQ sticky y morph del icono | Badge "Sample testimonial" visible en todas las capturas intermedias |
 | **M9 · Book + footer + WhatsApp** ✔ | Titular, líneas de campos, animación de éxito, wordmark que se rellena, entrada de WhatsApp | Envío con datos válidos e inválidos en Playwright; aviso de marca ficticia intacto |
-| **M10 · Auditoría final** | Pasada completa: Lighthouse móvil/escritorio, reduced-motion, Motion off, sin JS, teclado, 320 px, consola; pulido de easings y tiempos; actualizar `DESIGN.md`, `CLAUDE.md` (metas de peso si las apruebas) y README | Todas las metas de §5.3 y §6 |
+| **M10 · Auditoría final** ✔ | Pasada completa: Lighthouse móvil/escritorio, reduced-motion, Motion off, sin JS, teclado, 320 px, consola; pulido de easings y tiempos; actualizar `DESIGN.md`, `CLAUDE.md` (metas de peso si las apruebas) y README | Todas las metas de §5.3 y §6 |
 | *M11 (opcional)* | Lenis en escritorio, solo si lo pides | Las mismas que M10 |
 
 ---
@@ -345,3 +345,17 @@ Texto original de las decisiones:
 - **Verificación en `shots`:** envío inválido (foco en `#name`, `.is-invalid`, **anillo de foco presente**: protege del error del mapa de colores de M6, línea dibujada) y válido (mensaje, marca dibujada, aviso de demo presente); WhatsApp oculto en el hero y visible después; wordmark relleno al final; aviso de marca ficticia literal.
 - **Pesos:** CSS 114.4 KB / 19.5 KB gzip · crítico 14.9 KB · movimiento 133.6 KB / 51.7 KB gzip.
 - **Lighthouse (mediana de 5):** móvil 100 · 100 · 100 · 100 (LCP 906 ms, TBT 55 ms, CLS 0); escritorio 100 en todo.
+
+### M10 · Auditoría final ✔
+- **Interruptor Motion, a fondo:** `shots` recorre toda la página (se crean todas las entradas, SplitText y el pin), apaga Motion y comprueba que no quede ningún resto: nodos creados, clases (`.how-horizontal`, `.is-lit`, `.has-counter`…), `pin-spacer`, `aria-label` de SplitText ni estilos inline. El árbol de accesibilidad queda igual que con reduced-motion. Al volver a encenderlo, los módulos se reconstruyen.
+- **Bug encontrado así:** la `<ol>` de How it works conservaba un `transform`. Con `scrub`, ScrollTrigger persigue el progreso con un tween propio creado fuera del contexto, que volvía a pintar el timeline después de `revert()`. El cleanup de `how.js` ahora mata el ScrollTrigger y el timeline antes de limpiar.
+- **Documentación:** DESIGN.md (estructura de archivos, reparto entre `reveal.js` y GSAP), README (sección Motion), CLAUDE.md (convenciones de los módulos de `motion/`, `autoRound`).
+- **Comprobado en la pasada final** (`npm run shots -- final`): escritorio, móvil y 320 px sin scroll horizontal ni errores de consola; reduced-motion sin descargar el chunk; sin JS (captura completa en móvil); Tab (42 paradas con movimiento, 40 con reduced-motion: el checkbox del marquee y el interruptor Motion no existen en reduced) con cada foco visible y en pantalla; comportamiento de cada sección (M3–M9).
+- **Pesos finales:** CSS 114.4 KB / 19.5 KB gzip (meta 130 / 20) · crítico 14.9 KB (meta 15) · movimiento 133.7 KB / 51.7 KB gzip (meta 55).
+
+| Lighthouse (mediana de 5) | Performance | A11y | BP | SEO | LCP | TBT | CLS |
+|---|---|---|---|---|---|---|---|
+| Línea base `main`, móvil | 100 | 100 | 100 | 100 | 1052 ms | 32 ms | 0 |
+| Línea base `main`, escritorio | 100 | 100 | 100 | 100 | 374 ms | 0 ms | 0 |
+| **Final, móvil** | 100 | 100 | 100 | 100 | 1020 ms | 11 ms | 0 |
+| **Final, escritorio** | 100 | 100 | 100 | 100 | 368 ms | 0 ms | 0 |

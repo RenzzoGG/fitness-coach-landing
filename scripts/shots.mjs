@@ -169,8 +169,31 @@ try {
     if (device === 'desktop') {
       const { context, page } = await open(device);
       await motionReady(page);
+      // M10: recorrer la página para que se creen todas las animaciones "once",
+      // SplitText y el pin, y comprobar que apagar Motion lo deshace todo.
+      await scrollThrough(page, `${device}/toggle`);
+      await page.waitForTimeout(800);
       await page.click('.motion-toggle');
-      const off = await page.evaluate(() => [document.documentElement.dataset.motion, document.documentElement.classList.contains('motion-ready'), document.querySelector('.motion-toggle').getAttribute('aria-pressed')]);
+      await page.waitForTimeout(300);
+      const leftovers = await page.evaluate(() => {
+        const found = ['.price-counter', '.has-counter', '.how-signal', '.how-horizontal', '.pin-spacer', '.plan-signal', '.book-success-mark', '.is-lit', '.cursor', '#about-title[aria-label]', '.testimonial-quote p > div, .testimonial-quote p > span']
+          .filter((sel) => document.querySelector(sel));
+        const styled = [...document.querySelectorAll('main [style], .whatsapp-float[style], .site-header[style]')].filter((el) => !/^--card-index: \d$/.test(el.getAttribute('style')) && el.getAttribute('style').trim() !== '');
+        return [...found, ...styled.map((el) => `${el.tagName.toLowerCase()}.${[...el.classList].join('.')} style="${el.getAttribute('style')}"`)];
+      });
+      if (leftovers.length) fail(`motion toggle off left motion state behind: ${leftovers.join(' | ')}`);
+      const offTree = await page.locator('main').ariaSnapshot();
+      const MOTION_ONLY_LINE = /Pause marquee/;
+      const strip = (yml) => yml.split('\n').filter((line) => !MOTION_ONLY_LINE.test(line)).join('\n');
+      if (aria.reduced && strip(offTree) !== strip(aria.reduced)) fail('motion toggle off: accessibility tree differs from reduced motion');
+      await page.click('.motion-toggle');
+      if (!(await motionReady(page))) fail('motion toggle on again: motion did not restart');
+      await page.evaluate(() => window.scrollTo({ top: document.getElementById('about').offsetTop, behavior: 'instant' }));
+      await page.waitForTimeout(800);
+      const again = await page.evaluate(() => [document.querySelectorAll('.price-counter').length, document.getElementById('about-title').hasAttribute('aria-label')]);
+      if (again[0] !== 3 || !again[1]) fail(`motion toggle on again: modules not rebuilt (${again})`);
+      await page.click('.motion-toggle');
+      const off =await page.evaluate(() => [document.documentElement.dataset.motion, document.documentElement.classList.contains('motion-ready'), document.querySelector('.motion-toggle').getAttribute('aria-pressed')]);
       if (off.join() !== 'off,false,false') fail(`motion toggle off: got ${off.join()}`);
       const requests = [];
       page.on('request', (req) => requests.push(req.url()));

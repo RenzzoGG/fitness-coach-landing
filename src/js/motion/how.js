@@ -64,6 +64,11 @@ function horizontal(section) {
   }
 
   return () => {
+    // El scrub persigue el progreso con un tween propio, creado fuera del
+    // contexto: si sigue vivo, vuelve a pintar el timeline después de revert().
+    tl.scrollTrigger?.kill();
+    tl.kill();
+    gsap.set(list, { clearProps: 'transform,translate,rotate,scale' });
     section.classList.remove('how-horizontal');
     svg.remove();
     steps.forEach((step) => light(step, false));

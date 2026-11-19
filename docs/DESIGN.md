@@ -274,14 +274,18 @@ fitness-coach-landing/
 ├── package.json
 ├── Caddyfile            # servidor de producción en Railway (compresión y caché, F12)
 ├── docs/
-│   └── DESIGN.md
+│   ├── DESIGN.md
+│   └── MOTION-PLAN.md   # rediseño con GSAP (rama motion-redesign): plan y registro M0–M10
 ├── scripts/
 │   ├── build.mjs        # limpia dist/ y copia HTML, static, fuentes e imágenes optimizadas
 │   ├── dev.mjs          # watch de Sass + esbuild + servidor local (esbuild serve)
 │   ├── images.mjs       # sharp: originales → AVIF/WebP/JPEG en 480/800/1200 (caché en .cache/img)
 │   ├── hash-assets.mjs  # cache-busting: hash del contenido en los nombres
 │   ├── compress.mjs     # precompresión .br/.gz de los archivos de texto
-│   └── og.mjs           # sharp: genera og-image.png de 1200×630
+│   ├── og.mjs           # sharp: genera og-image.png de 1200×630
+│   ├── shots.mjs        # Playwright: capturas y comprobaciones por sección (M1–M10)
+│   ├── lighthouse.mjs   # Lighthouse móvil/escritorio ×5 sobre static-server.mjs (brotli + caché)
+│   └── browser.mjs      # Chromium de Playwright con las librerías extraídas en ~/.cache/pw-libs
 ├── src/
 │   ├── index.html
 │   ├── scss/
@@ -290,18 +294,24 @@ fitness-coach-landing/
 │   │   ├── _utilities.scss  # ajustes a la Utility API
 │   │   ├── _fonts.scss      # @font-face locales
 │   │   ├── _base.scss       # estilos globales propios (rejilla, foco, reveal)
-│   │   └── components/      # _navbar, _hero, _pricing, _steps, _testimonials, _faq, _form, _whatsapp, _footer
+│   │   ├── _mixins.scss     # @mixin motion (reduced-motion + interruptor Motion)
+│   │   ├── _theme-colors.scss # recorte de $theme-colors
+│   │   └── components/      # _navbar, _hero, _marquee, _about, _pricing, _steps, _testimonials, _faq, _form, _whatsapp, _footer
 │   ├── js/
 │   │   ├── main.js            # punto de entrada: importa Collapse e inicializa módulos
 │   │   ├── pricing-toggle.js
 │   │   ├── form-validation.js
-│   │   └── reveal.js
+│   │   ├── navbar.js
+│   │   ├── reveal.js          # entradas de las cabeceras de sección (sin GSAP)
+│   │   ├── motion-loader.js   # interruptor Motion + import() del chunk en la 1.ª interacción
+│   │   ├── motion.js          # chunk: GSAP + gsap.matchMedia() con un módulo por sección
+│   │   └── motion/            # utils, global, hero, about, programs, how, results-faq, book-footer
 │   ├── img/                 # originales (alta resolución)
 │   └── static/              # favicon.svg, apple-touch-icon.png, robots.txt, site.webmanifest
 └── dist/                    # GENERADO (ignorado por git)
     ├── index.html
     ├── css/main.css
-    ├── js/main.js
+    ├── js/main.[hash].js + js/motion.[hash].js
     ├── fonts/*.woff2
     ├── img/*.{avif,webp,jpg}
     └── og-image.png
@@ -363,6 +373,7 @@ fitness-coach-landing/
   - **Failsafe (F9):** si `.js` está pero el módulo no llega a cargar, nadie añadiría `.is-visible`. Mientras `<html>` no tenga `.reveal-ready` (lo pone `reveal.js` al iniciar), una animación `reveal-failsafe` con 2 s de retraso muestra el contenido igualmente.
   - Escalonado de columnas con `.reveal:nth-child(2|3)` y `transition-delay` (80 y 160 ms), sin JS ni HTML extra.
   - El hero no lleva `.reveal`: es el LCP y debe pintarse de inmediato.
+  - **Rediseño con movimiento (M5–M9):** `.reveal` queda solo en las cabeceras de sección, la intro del FAQ y las columnas de Book. Las tarjetas, pasos, citas y preguntas pierden `.reveal` y sus entradas las hace GSAP desde el chunk (`motion/utils.js` → `enter()`, que nunca oculta lo que ya está en pantalla). Sin el chunk se ven estáticas desde el principio. Apagar el interruptor Motion revierte todo y deja el mismo árbol de accesibilidad que reduced-motion (comprobado en `npm run shots`).
 
 ### SEO y Open Graph
 - `<title>`, `meta description` (141 caracteres), `canonical`, `theme-color #0e0f12`, `color-scheme dark`, 10 etiquetas `og:*` (description de 141 caracteres, dentro de 100–160) y 5 `twitter:*` (`summary_large_image`), favicon SVG, `apple-touch-icon` y `site.webmanifest`. `robots.txt` con `Allow: /`.
