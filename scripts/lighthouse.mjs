@@ -1,6 +1,7 @@
 // Lighthouse móvil y escritorio contra dist/, servido como en producción
 // (static-server.mjs: brotli + Cache-Control de Caddy).
 // Uso: npm run lh [-- etiqueta]   → .cache/lighthouse/<etiqueta>/
+// LH_ONLY=mobile|desktop limita el dispositivo y LH_DIR sirve otra carpeta (experimentos).
 // Performance varía entre ejecuciones (CPU del WSL), así que se corre 5 veces
 // por dispositivo y se informa la mediana; el resto de categorías no varía.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -16,7 +17,7 @@ const out = `${root}.cache/lighthouse/${label}`;
 const RUNS = Number(process.env.LH_RUNS) || 5;
 mkdirSync(out, { recursive: true });
 
-const server = await serve(`${root}dist`);
+const server = await serve(process.env.LH_DIR ?? `${root}dist`);
 const port = 9300 + Math.floor(Math.random() * 500);
 const browser = await launch({ args: [`--remote-debugging-port=${port}`] });
 
@@ -24,7 +25,8 @@ const median = (values) => values.toSorted((a, b) => a - b)[Math.floor(values.le
 const summary = {};
 
 try {
-  for (const [device, config] of [['mobile', undefined], ['desktop', desktopConfig]]) {
+  const devices = [['mobile', undefined], ['desktop', desktopConfig]].filter(([d]) => !process.env.LH_ONLY || process.env.LH_ONLY === d);
+  for (const [device, config] of devices) {
     const runs = [];
     for (let i = 1; i <= RUNS; i++) {
       const { lhr, report } = await lighthouse(`${server.url}/`, { port, output: 'html', logLevel: 'error' }, config);

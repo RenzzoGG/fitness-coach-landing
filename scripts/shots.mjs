@@ -51,9 +51,10 @@ async function open(device, options = {}) {
   return { context, page, errors, requests };
 }
 
-// El chunk de movimiento añade .motion-ready a <html> al terminar de iniciarse.
+// El chunk de movimiento se pide con la primera interacción (motion-loader.js):
+// se mueve el ratón y se espera a que añada .motion-ready a <html>.
 const motionReady = (page) =>
-  page.waitForFunction(() => document.documentElement.classList.contains('motion-ready'), null, { timeout: 8000 }).then(
+  page.mouse.move(5, 5).then(() => page.waitForFunction(() => document.documentElement.classList.contains('motion-ready'), null, { timeout: 8000 })).then(
     () => true,
     () => false,
   );
@@ -151,7 +152,8 @@ try {
     // 2. prefers-reduced-motion: reduce
     {
       const { context, page, errors, requests } = await open(device, { reducedMotion: 'reduce' });
-      await page.waitForTimeout(1500); // margen por si el cargador lo pidiera en idle
+      await page.mouse.move(5, 5); // la interacción que pediría el chunk si el movimiento estuviera permitido
+      await page.waitForTimeout(1500);
       await scrollThrough(page, `${device}/reduced`);
       await page.screenshot({ path: `${out}/${device}-full-reduced.png`, fullPage: true });
       if (requests.some((u) => MOTION_CHUNK.test(u))) fail(`${device}/reduced: motion chunk was downloaded`);
@@ -173,6 +175,7 @@ try {
       const requests = [];
       page.on('request', (req) => requests.push(req.url()));
       await page.reload({ waitUntil: 'load' });
+      await page.mouse.move(20, 20);
       await page.waitForTimeout(1500);
       const pressed = await page.getAttribute('.motion-toggle', 'aria-pressed');
       if (pressed !== 'false' || requests.some((u) => MOTION_CHUNK.test(u))) fail(`motion toggle after reload: aria-pressed=${pressed}, chunk requested=${requests.some((u) => MOTION_CHUNK.test(u))}`);
@@ -211,6 +214,38 @@ try {
       await context.close();
     }
 
+    // 4b. Hero + marquee (M4): parallax del titular, marquee en marcha, acelera al
+    // bajar, va hacia atrás al subir y se detiene con su checkbox de pausa.
+    if (device === 'desktop') {
+      const { context, page } = await open(device);
+      await motionReady(page);
+      const marquee = () =>
+        page.evaluate(() => {
+          const a = document.querySelector('.marquee-track').getAnimations()[0];
+          return a ? { state: a.playState, rate: a.playbackRate } : null;
+        });
+      const before = await marquee();
+      if (before?.state !== 'running') fail(`hero: marquee not running (${JSON.stringify(before)})`);
+      await page.mouse.move(700, 400);
+      await page.mouse.wheel(0, 500);
+      await page.waitForTimeout(150);
+      const down = await marquee();
+      if (!(down?.rate > 1)) fail(`hero: marquee did not speed up on scroll (rate ${down?.rate})`);
+      await page.waitForTimeout(600);
+      const line = await page.evaluate(() => getComputedStyle(document.querySelector('.hero-title .line')).transform);
+      if (line === 'none') fail('hero: headline parallax did not move');
+      await page.mouse.wheel(0, -300);
+      await page.waitForTimeout(150);
+      const up = await marquee();
+      if (!(up?.rate < 0) || up.state !== 'running') fail(`hero: marquee did not reverse on scroll up (${JSON.stringify(up)})`);
+      await page.locator('.marquee-pause label').click();
+      await page.waitForTimeout(100);
+      const paused = await marquee();
+      if (paused?.state !== 'paused') fail(`hero: pause checkbox did not pause (${paused?.state})`);
+      console.log('  hero + marquee: ok');
+      await context.close();
+    }
+
     // 5. Sin JS
     if (device === 'mobile') {
       const { context, page } = await open(device, { javaScriptEnabled: false });
@@ -222,7 +257,10 @@ try {
 
   writeFileSync(`${out}/aria-motion.yml`, aria.motion);
   writeFileSync(`${out}/aria-reduced.yml`, aria.reduced);
-  if (aria.motion !== aria.reduced) fail('accessibility tree differs between motion and reduced motion (see aria-*.yml)');
+  // Única diferencia esperada: el control de pausa del marquee solo existe con movimiento.
+  const MOTION_ONLY = /Pause marquee/;
+  const tree = (yml) => yml.split('\n').filter((line) => !MOTION_ONLY.test(line)).join('\n');
+  if (tree(aria.motion) !== tree(aria.reduced)) fail('accessibility tree differs between motion and reduced motion (see aria-*.yml)');
 } finally {
   await browser.close();
   server.close();

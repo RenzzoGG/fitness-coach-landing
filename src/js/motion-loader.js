@@ -3,8 +3,8 @@
 // motion.js (~48 KB gzip), que esbuild separa en otro archivo por el import().
 //
 // - Con prefers-reduced-motion: reduce, o con Motion en "off", no se descarga.
-// - Si se descarga, es después del evento load y en un momento libre del hilo
-//   principal: no compite con el LCP ni con la interactividad inicial.
+// - Si se descarga, es con la primera interacción del usuario (ver initMotion):
+//   no compite con el LCP ni con la interactividad inicial.
 // - El estado "off" se guarda en localStorage; el script inline del <head> lo
 //   aplica (data-motion="off" en <html>) antes de pintar, para que las
 //   animaciones CSS ni siquiera empiecen.
@@ -41,8 +41,10 @@ export function initMotion() {
   // Si el usuario cambia la preferencia del sistema con la página abierta.
   reduce.addEventListener('change', sync);
 
-  if (!allowed()) return;
-  const idle = () => ('requestIdleCallback' in window ? requestIdleCallback(sync, { timeout: 2000 }) : setTimeout(sync, 200));
-  if (document.readyState === 'complete') idle();
-  else addEventListener('load', idle, { once: true });
+  // Se descarga con la primera interacción: todo lo que hace el chunk (parallax,
+  // entradas al hacer scroll, cursor, magnetismo) necesita una para verse, y la
+  // intro del hero es CSS. Así la evaluación de GSAP no compite con la carga
+  // (medido en M4: TBT móvil 219 ms con "load + idle"). sync() es idempotente,
+  // así que da igual cuántos de estos eventos lleguen.
+  if (allowed()) for (const type of ['scroll', 'pointermove', 'pointerdown', 'keydown', 'touchstart']) addEventListener(type, sync, { passive: true, once: true });
 }

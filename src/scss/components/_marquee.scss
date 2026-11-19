@@ -1,11 +1,15 @@
+@use "sass:map";
+
 // =============================================================================
-// Marquee: dos bandas inclinadas entre Hero y About (decorativas, aria-hidden)
-// En M2 son estáticas; el desplazamiento infinito llega en M4.
+// Marquee: dos bandas inclinadas entre Hero y About (decorativas, aria-hidden).
+// Desplazamiento infinito en CSS (M4); el chunk de movimiento solo cambia su
+// velocidad con la del scroll (playbackRate de la Web Animations API).
 // =============================================================================
 
 // overflow: clip recorta las bandas giradas (que sobresalen por los lados) sin
 // crear un contenedor de scroll. hidden queda como respaldo para navegadores viejos.
 .marquee {
+  position: relative;
   padding-block: 2.5rem;
   overflow: hidden;
   overflow: clip;
@@ -62,5 +66,63 @@
 
   .marquee-band-outline & span::after {
     background-color: $volt;
+  }
+}
+
+// Bucle: cada pista contiene su texto dos veces, así que moverla un -50 % deja
+// la segunda copia exactamente donde empezaba la primera y el salto no se ve.
+// Solo corre con .motion-ready (el chunk de movimiento ya arrancó, es decir,
+// hubo una interacción y el movimiento está permitido; stop() la quita). Medido
+// en M4: corriendo desde la carga, el marquee duplicaba el TBT móvil de
+// Lighthouse, y sin interacción nadie lo ve (está bajo el hero en escritorio).
+// .motion-ready implica movimiento permitido, así que no hace falta el mixin.
+.motion-ready .marquee-track {
+  animation: marquee 40s linear infinite;
+}
+
+.motion-ready .marquee-band-outline .marquee-track {
+  animation-direction: reverse;
+}
+
+// Pausa: con el checkbox marcado o con el puntero encima.
+.motion-ready .marquee:is(:hover, :has(.marquee-pause-input:checked)) .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+// Control de pausa: solo cuando hay algo que pausar (el marquee en marcha).
+.marquee-pause {
+  position: absolute;
+  right: map.get($spacers, 3);
+  bottom: .25rem;
+  z-index: 2;
+  display: none;
+  gap: .5rem;
+  align-items: center;
+  padding: .375rem .875rem;
+  font-size: $small-font-size;
+  font-weight: 500;
+  color: $chalk;
+  background-color: $ink;
+  border: 1px solid $rule;
+  border-radius: $border-radius-pill;
+
+  .motion-ready & {
+    display: inline-flex;
+  }
+
+  // El checkbox nativo, con el color de marca y su foco visible de Bootstrap.
+  label {
+    cursor: pointer;
+  }
+
+  input {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    accent-color: $volt;
   }
 }

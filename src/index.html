@@ -85,13 +85,14 @@
       <div class="bg-grid position-absolute top-0 start-0 w-100 h-100" aria-hidden="true"></div>
       <div class="container position-relative">
         <p class="eyebrow">Online strength &amp; performance coaching</p>
-        <!-- Cada .line es una línea fija del titular: la intro (M4) las revela una a una.
-             Son <span> en línea con espacios entre ellas: el lector de pantalla lee la frase entera. -->
+        <!-- Cada .line es una línea fija del titular y hace de máscara (overflow: hidden): su <span>
+             interior sube desde abajo en la intro (M4). Son <span> en línea con espacios entre
+             ellas: el lector de pantalla lee la frase entera. -->
         <div class="hero-headline">
         <h1 id="hero-title" class="hero-title mb-0">
-          <span class="line">Train with <span class="hero-title-accent">intent.</span></span>
-          <span class="line">Get strong for</span>
-          <span class="line">real life.</span>
+          <span class="line"><span>Train with <span class="hero-title-accent">intent.</span></span></span>
+          <span class="line"><span>Get strong for</span></span>
+          <span class="line"><span>real life.</span></span>
         </h1>
         <!-- La señal: la línea de pulso del logo, a lo ancho de la ventana entre la 1.ª y la 2.ª línea
              del titular (decorativa; se dibuja en M4). El pico cae a la derecha, donde la línea 2 deja hueco. -->
@@ -130,15 +131,20 @@
       </div>
     </section>
 
-    <!-- Marquee: repite frases del hero, así que es decorativo para el lector de pantalla -->
-    <div class="marquee" aria-hidden="true">
-      <div class="marquee-band">
+    <!-- Marquee: las bandas repiten frases del hero, así que son decorativas (aria-hidden).
+         La pausa (WCAG 2.2.2) es un checkbox: funciona solo con CSS (:has), sin esperar al JS. -->
+    <div class="marquee">
+      <div class="marquee-pause">
+        <input class="marquee-pause-input" id="marquee-pause" name="marquee-pause" type="checkbox">
+        <label for="marquee-pause">Pause marquee</label>
+      </div>
+      <div class="marquee-band" aria-hidden="true">
         <div class="marquee-track">
           <span>Train with intent</span><span>12-week training blocks</span><span>Weekly 1:1 check-ins</span><span>Home or gym</span>
           <span>Train with intent</span><span>12-week training blocks</span><span>Weekly 1:1 check-ins</span><span>Home or gym</span>
         </div>
       </div>
-      <div class="marquee-band marquee-band-outline">
+      <div class="marquee-band marquee-band-outline" aria-hidden="true">
         <div class="marquee-track">
           <span>Strength</span><span>Consistency</span><span>Progress</span><span>Strength</span><span>Consistency</span><span>Progress</span>
           <span>Strength</span><span>Consistency</span><span>Progress</span><span>Strength</span><span>Consistency</span><span>Progress</span>

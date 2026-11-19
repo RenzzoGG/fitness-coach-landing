@@ -19,7 +19,7 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 - `npm run build`: build de producción en `dist/`.
 - `npm run check`: verifica que cada clase del HTML exista en el CSS. `npm run size`: peso del CSS y de los dos bundles de JS, comparado con las metas (sale con error si alguna se supera).
 - `npm run verify`: `html-validate` (estándar HTML, preset recommended) + auditoría propia de `dist/` (estructura HTML, ids, títulos, anclas, ARIA, etiquetas, imágenes, landmarks, meta/OG y referencias rotas). Ejecutar `build`, `check`, `verify`, `size`, `shots` y `lh` al cerrar cada fase.
-- `npm run shots [-- etiqueta]`: Playwright sobre `dist/` (escritorio 1440, móvil 390, estrecho 320): capturas por sección en `.cache/shots/<etiqueta>/` y comprobaciones (scroll horizontal, errores de consola, chunk de movimiento con/sin reduced-motion, interruptor Motion, recorrido con Tab, árbol de accesibilidad igual con y sin movimiento). Sale con error si algo falla.
+- `npm run shots [-- etiqueta]`: Playwright sobre `dist/` (escritorio 1440, móvil 390, estrecho 320): capturas por sección en `.cache/shots/<etiqueta>/` y comprobaciones (scroll horizontal, errores de consola, chunk de movimiento con/sin reduced-motion, interruptor Motion, capa global y comportamiento de cada sección animada, recorrido con Tab, árbol de accesibilidad igual con y sin movimiento). Sale con error si algo falla.
 - `npm run lh [-- etiqueta]`: Lighthouse móvil y escritorio ×5 (mediana) sobre `dist/` servido como en producción (brotli + Cache-Control, `scripts/static-server.mjs`). Informes en `.cache/lighthouse/<etiqueta>/`.
 - En este WSL no hay sudo: Chromium usa librerías extraídas en `~/.cache/pw-libs` (lo resuelve `scripts/browser.mjs`).
 - Las imágenes responsive se generan dentro del build (`scripts/images.mjs`, con caché en `.cache/img`).
@@ -39,7 +39,7 @@ Landing page de portafolio para **Pulse Theory**, una marca **ficticia** de coac
 
 ## JavaScript propio
 - Vanilla, módulos ES en `src/js/`, un módulo por funcionalidad, inicializados desde `main.js`.
-- **Dos bundles** (esbuild `--splitting`): el **crítico** (`main.js`) y el **chunk de movimiento** (`motion.js` + `src/js/motion/`), que solo pide `motion-loader.js` con `import()` dinámico, tras `load` y en `requestIdleCallback`, y **nunca** con `prefers-reduced-motion: reduce` ni con el interruptor Motion apagado. GSAP solo se importa desde el chunk.
+- **Dos bundles** (esbuild `--splitting`): el **crítico** (`main.js`) y el **chunk de movimiento** (`motion.js` + `src/js/motion/`), que solo pide `motion-loader.js` con `import()` dinámico en la **primera interacción** (`scroll`, `pointermove`, `pointerdown`, `keydown`, `touchstart`; desde M4, medido: con `load` + `requestIdleCallback` el TBT móvil subía a 219 ms), y **nunca** con `prefers-reduced-motion: reduce` ni con el interruptor Motion apagado. GSAP solo se importa desde el chunk.
 - Toda animación GSAP se crea dentro del `gsap.matchMedia()` de `motion.js` (así `stop()` la revierte). El contenido nunca depende del chunk para verse.
 - CSS de movimiento: siempre con `@include motion { … }` (`_mixins.scss`), que combina `prefers-reduced-motion: no-preference` y el interruptor `data-motion="off"`.
 - Mejora progresiva: el contenido debe verse y entenderse sin JS (precios mensuales en el HTML, secciones visibles).
