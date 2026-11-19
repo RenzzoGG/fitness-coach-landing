@@ -417,6 +417,50 @@ try {
       await context.close();
     }
 
+    // 4g. Book + footer + WhatsApp (M9): envío inválido (foco en el primer error,
+    // con anillo de foco) y válido (mensaje + marca de éxito), línea del campo,
+    // avisos de demo y de marca ficticia intactos, wordmark relleno al final y
+    // WhatsApp oculto en el hero y visible después.
+    if (device === 'desktop') {
+      const { context, page } = await open(device);
+      await motionReady(page);
+      const wa = () => page.evaluate(() => getComputedStyle(document.querySelector('.whatsapp-float')).visibility);
+      if ((await wa()) !== 'hidden') fail('whatsapp: visible inside the hero');
+      await page.locator('#book-form').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(900);
+      if ((await wa()) !== 'visible') fail('whatsapp: not visible after the hero');
+      await page.locator('#book-form button[type="submit"]').click();
+      await page.waitForTimeout(600);
+      const invalid = await page.evaluate(() => {
+        const el = document.activeElement;
+        return { id: el.id, invalid: el.classList.contains('is-invalid'), ring: getComputedStyle(el).boxShadow, line: getComputedStyle(el.nextElementSibling).transform, status: document.getElementById('book-status').textContent };
+      });
+      if (invalid.id !== 'name' || !invalid.invalid || invalid.status) fail(`book invalid submit: focus on #${invalid.id}, invalid ${invalid.invalid}, status "${invalid.status}"`);
+      if (!invalid.ring || invalid.ring === 'none') fail('book: invalid field has no focus ring');
+      if (invalid.line !== 'none' && invalid.line !== 'matrix(1, 0, 0, 1, 0, 0)') fail(`book: field line not drawn on focus (${invalid.line})`);
+      await page.fill('#name', 'Sam Example');
+      await page.fill('#email', 'sam@example.com');
+      await page.selectOption('#goal', { index: 1 });
+      await page.check('#consent');
+      await page.locator('#book-form button[type="submit"]').click();
+      await page.waitForTimeout(1300);
+      const ok = await page.evaluate(() => ({
+        status: document.getElementById('book-status').textContent,
+        mark: getComputedStyle(document.querySelector('.book-success-mark path')).strokeDashoffset,
+        demo: [...document.querySelectorAll('#book-form p')].some((p) => p.textContent === 'Demo form — no data is sent anywhere.'),
+      }));
+      if (!ok.status.startsWith('Thanks!') || ok.mark !== '0px' || !ok.demo) fail(`book valid submit: ${JSON.stringify(ok)}`);
+      await page.screenshot({ path: `${out}/desktop-book-success.png` });
+      await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+      await page.waitForTimeout(1500);
+      const footer = await page.evaluate(() => ({ fill: getComputedStyle(document.querySelector('.footer-wordmark')).backgroundPosition, notice: document.querySelector('.footer-notice').textContent.replace(/\s+/g, ' ').trim() }));
+      if (!footer.fill.startsWith('0%')) fail(`footer: wordmark not filled at the end (${footer.fill})`);
+      if (footer.notice !== 'Pulse Theory is a fictional brand. This is a demo project by Renzzo Gracia Gomez — renzzogg.com') fail(`footer: notice changed: ${footer.notice}`);
+      await page.screenshot({ path: `${out}/desktop-footer-end.png` });
+      console.log('  book + footer + whatsapp: ok');
+      await context.close();
+    }
+
     // 5. Sin JS
     if (device === 'mobile') {
       const { context, page } = await open(device, { javaScriptEnabled: false });

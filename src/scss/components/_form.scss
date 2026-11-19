@@ -20,3 +20,51 @@
   line-height: .95;
   letter-spacing: -.05em;
 }
+
+// -----------------------------------------------------------------------------
+// Movimiento (M9)
+// -----------------------------------------------------------------------------
+
+// Línea Volt bajo el campo enfocado, que se dibuja de izquierda a derecha.
+// Es ADEMÁS del anillo de foco de Bootstrap ($input-focus-box-shadow), no en
+// su lugar. Un <span> justo después del campo (los campos no admiten
+// ::before/::after y su background-image ya lo usan la flecha del select y el
+// icono de error de Bootstrap). Se monta sobre el borde inferior con un margen
+// negativo y se aparta de las esquinas redondeadas.
+.field-line {
+  display: block;
+  height: 2px;
+  margin: -2px $input-border-radius 0;
+  pointer-events: none;
+  background-color: $volt;
+  transform: scaleX(0);
+  transform-origin: left;
+
+  @include motion {
+    transition: transform .45s cubic-bezier(.65, 0, .35, 1);
+  }
+
+  :focus + & {
+    transform: none;
+  }
+}
+
+// Pulso que termina en check tras un envío correcto (lo crea el chunk).
+.book-success-mark {
+  display: block;
+  width: 9rem;
+  height: 2.5rem;
+  margin-top: map.get($spacers, 4);
+
+  path {
+    fill: none;
+    stroke: $volt;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  + .book-status:not(:empty) {
+    margin-top: map.get($spacers, 2);
+  }
+}

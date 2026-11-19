@@ -540,18 +540,22 @@
             <!-- novalidate: sin burbujas nativas (idioma del navegador, sin estilo); la
                  Constraint Validation API sigue funcionando y la usa form-validation.js -->
             <form id="book-form" class="card" novalidate aria-labelledby="book-title">
+              <!-- .field-line (decorativa): la línea Volt que se dibuja bajo el campo al
+                   enfocarlo (M9). Va justo después del campo para usar el selector "+". -->
               <div class="card-body">
                 <p class="small text-body-secondary">All fields are required unless marked optional.</p>
                 <div class="row g-3">
                   <div class="col-md-6">
                     <label class="form-label" for="name">Full name</label>
                     <input class="form-control" id="name" name="name" type="text" autocomplete="name" maxlength="80" required aria-describedby="name-error">
+                    <span class="field-line" aria-hidden="true"></span>
                     <div class="invalid-feedback" id="name-error">Please enter your name.</div>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label" for="email">Email</label>
                     <input class="form-control" id="email" name="email" type="email" autocomplete="email" required aria-describedby="email-error"
                            data-type-mismatch="Enter a valid email, like name@example.com.">
+                    <span class="field-line" aria-hidden="true"></span>
                     <div class="invalid-feedback" id="email-error">Please enter your email.</div>
                   </div>
                   <div class="col-md-6">
@@ -563,6 +567,7 @@
                       <option>Improve performance</option>
                       <option>Get back into training</option>
                     </select>
+                    <span class="field-line" aria-hidden="true"></span>
                     <div class="invalid-feedback" id="goal-error">Please choose your main goal.</div>
                   </div>
                   <div class="col-md-6">
@@ -573,6 +578,7 @@
                       <option value="performance">Performance</option>
                       <option value="elite">Elite 1:1</option>
                     </select>
+                    <span class="field-line" aria-hidden="true"></span>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label" for="time">Best time to call <span class="text-body-secondary">(optional)</span></label>
@@ -582,10 +588,12 @@
                       <option>Afternoon</option>
                       <option>Evening</option>
                     </select>
+                    <span class="field-line" aria-hidden="true"></span>
                   </div>
                   <div class="col-12">
                     <label class="form-label" for="message">Anything else? <span class="text-body-secondary">(optional)</span></label>
                     <textarea class="form-control" id="message" name="message" rows="4" maxlength="500" aria-describedby="message-hint"></textarea>
+                    <span class="field-line" aria-hidden="true"></span>
                     <div class="form-text" id="message-hint">Injuries, equipment, schedule — up to 500 characters.</div>
                   </div>
                   <div class="col-12">

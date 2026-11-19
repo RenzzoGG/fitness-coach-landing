@@ -40,6 +40,15 @@
   letter-spacing: -.04em;
   white-space: nowrap;
   user-select: none;
+  // M9: relleno de Chalk de izquierda a derecha. El degradado (mitad Chalk,
+  // mitad transparente) a 200 % de ancho se recorta al texto (background-clip);
+  // en 100 % solo se ve la mitad transparente (el contorno), y el chunk lo lleva
+  // a 0 % con el scroll. Sin el chunk queda como antes: solo contorno.
+  background-image: linear-gradient(90deg, $chalk 50%, transparent 50%);
+  background-position: 100% 0;
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
 
   @include media-breakpoint-up(xxl) {
     font-size: 12.25rem;
